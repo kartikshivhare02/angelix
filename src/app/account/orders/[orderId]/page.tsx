@@ -75,26 +75,25 @@ export default function OrderDetailPage() {
 
   useEffect(() => {
     const init = async () => {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { router.push("/login"); return; }
-
-      // Fetch the specific order
-      const { data, error } = await supabase
-        .from("orders")
-        .select("*, items:order_items(*)")
-        .eq("id", orderId)
-        .eq("profile_id", user.id)
-        .single();
-
-      if (error || !data) {
+      try {
+        const res = await fetch(`/api/account/orders/${orderId}`);
+        if (!res.ok) {
+          router.push("/account/orders");
+          return;
+        }
+        const data = await res.json();
+        if (data.order) {
+          setOrder(data.order as Order);
+        } else {
+          router.push("/account/orders");
+        }
+      } catch {
         router.push("/account/orders");
-        return;
+      } finally {
+        setLoading(false);
       }
-      setOrder(data as Order);
-      setLoading(false);
     };
-    init();
+    if (orderId) init();
   }, [orderId, router]);
 
   if (loading) {

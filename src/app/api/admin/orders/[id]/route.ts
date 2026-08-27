@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { assertAdmin } from "@/lib/admin-auth";
 
@@ -27,5 +28,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const body = await req.json();
   const { data, error } = await adminClient.from("orders").update({ ...body, updated_at: new Date().toISOString() }).eq("id", id).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  try {
+    revalidatePath("/account/orders");
+    revalidatePath(`/account/orders/${id}`);
+    revalidatePath("/admin/orders");
+    revalidatePath(`/admin/orders/${id}`);
+  } catch {}
+
   return NextResponse.json({ order: data });
 }
