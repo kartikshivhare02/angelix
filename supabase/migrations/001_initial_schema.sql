@@ -1,0 +1,422 @@
+-- ============================================================
+-- ANGLELIX DATABASE SCHEMA — Full Migration
+-- Run this in your Supabase SQL editor
+-- ============================================================
+
+-- Enable UUID extension
+create extension if not exists "uuid-ossp";
+create extension if not exists pg_trgm; -- For fast text search
+
+-- ── Fragrance Families ────────────────────────────────────────
+create table if not exists fragrance_families (
+  id uuid primary key default uuid_generate_v4(),
+  name text not null,
+  slug text not null unique,
+  description text,
+  icon text,
+  created_at timestamptz default now()
+);
+
+-- ── Categories ───────────────────────────────────────────────
+create table if not exists categories (
+  id uuid primary key default uuid_generate_v4(),
+  name text not null,
+  slug text not null unique,
+  description text,
+  image_url text,
+  is_active boolean default true,
+  display_order int default 0,
+  created_at timestamptz default now()
+);
+
+-- ── Profiles (extends Supabase auth.users) ───────────────────
+create table if not exists profiles (
+  id uuid primary key default uuid_generate_v4(),
+  auth_user_id uuid references auth.users(id) on delete cascade unique not null,
+  first_name text,
+  last_name text,
+  email text,
+  phone text,
+  whatsapp_number text,
+  date_of_birth date,
+  marketing_consent boolean default false,
+  role text not null default 'customer' check (role in ('customer', 'admin', 'super_admin')),
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+create index if not exists idx_profiles_auth_user on profiles(auth_user_id);
+create index if not exists idx_profiles_email on profiles(email);
+
+-- ── Addresses ────────────────────────────────────────────────
+create table if not exists addresses (
+  id uuid primary key default uuid_generate_v4(),
+  profile_id uuid references profiles(id) on delete cascade not null,
+  full_name text not null,
+  phone text not null,
+  address_line1 text not null,
+  address_line2 text,
+  landmark text,
+  city text not null,
+  state text not null,
+  pin_code text not null,
+  country text not null default 'India',
+  is_default boolean default false,
+  created_at timestamptz default now()
+);
+create index if not exists idx_addresses_profile on addresses(profile_id);
+
+-- ── Products ─────────────────────────────────────────────────
+create table if not exists products (
+  id uuid primary key default uuid_generate_v4(),
+  name text not null,
+  slug text not null unique,
+  sku text not null unique,
+  short_description text,
+  full_description text,
+  brand text default 'ANGLELIX',
+  category_id uuid references categories(id),
+  gender text check (gender in ('Men', 'Women', 'Unisex')),
+  concentration text, -- EDP, EDT, Parfum, EDC
+  volume_ml int,
+  original_price numeric(10,2) not null,
+  sale_price numeric(10,2),
+  discount_percentage int,
+  stock_quantity int not null default 0,
+  low_stock_threshold int default 5,
+  main_image_url text,
+  thumbnail_url text,
+  top_notes text[] default '{}',
+  middle_notes text[] default '{}',
+  base_notes text[] default '{}',
+  longevity text,
+  projection text,
+  season text[] default '{}',
+  occasion text[] default '{}',
+  ingredients text,
+  how_to_apply text,
+  delivery_estimate text,
+  is_featured boolean default false,
+  is_bestseller boolean default false,
+  is_new_arrival boolean default false,
+  tester_available boolean default false,
+  is_published boolean default false,
+  seo_title text,
+  seo_description text,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+create index if not exists idx_products_slug on products(slug);
+create index if not exists idx_products_published on products(is_published);
+create index if not exists idx_products_featured on products(is_featured);
+create index if not exists idx_products_category on products(category_id);
+create index if not exists idx_products_name_trgm on products using gin(name gin_trgm_ops);
+
+-- ── Product Images ────────────────────────────────────────────
+create table if not exists product_images (
+  id uuid primary key default uuid_generate_v4(),
+  product_id uuid references products(id) on delete cascade not null,
+  image_url text not null,
+  alt_text text,
+  display_order int default 0
+);
+create index if not exists idx_product_images_product on product_images(product_id);
+
+-- ── Product Fragrance Families (many-to-many) ─────────────────
+create table if not exists product_fragrance_families (
+  product_id uuid references products(id) on delete cascade,
+  fragrance_family_id uuid references fragrance_families(id) on delete cascade,
+  primary key (product_id, fragrance_family_id)
+);
+
+-- ── Coupons ───────────────────────────────────────────────────
+create table if not exists coupons (
+  id uuid primary key default uuid_generate_v4(),
+  code text not null unique,
+  description text,
+  discount_type text not null check (discount_type in ('percentage', 'fixed')),
+  discount_value numeric(10,2) not null,
+  min_order_value numeric(10,2) default 0,
+  max_discount numeric(10,2),
+  usage_limit int,
+  usage_limit_per_customer int,
+  times_used int default 0,
+  start_date timestamptz,
+  end_date timestamptz,
+  is_first_order_only boolean default false,
+  is_active boolean default true,
+  applicable_products uuid[] default '{}',
+  applicable_categories uuid[] default '{}',
+  created_at timestamptz default now()
+);
+
+-- ── Coupon Usage ─────────────────────────────────────────────
+create table if not exists coupon_usage (
+  id uuid primary key default uuid_generate_v4(),
+  coupon_id uuid references coupons(id) on delete cascade,
+  profile_id uuid references profiles(id),
+  order_id uuid,
+  used_at timestamptz default now()
+);
+
+-- ── Orders ────────────────────────────────────────────────────
+create sequence if not exists order_number_seq start 1000;
+
+create table if not exists orders (
+  id uuid primary key default uuid_generate_v4(),
+  order_number text not null unique default 'ANG-' || extract(year from now())::text || '-' || lpad(nextval('order_number_seq')::text, 6, '0'),
+  profile_id uuid references profiles(id),
+  guest_email text,
+  status text not null default 'pending' check (status in ('pending','confirmed','processing','packed','shipped','out_for_delivery','delivered','cancelled','refunded')),
+  payment_status text not null default 'pending' check (payment_status in ('pending','paid','failed','refunded')),
+  payment_method text check (payment_method in ('razorpay', 'cod')),
+  subtotal numeric(10,2) not null,
+  discount_amount numeric(10,2) default 0,
+  shipping_amount numeric(10,2) default 0,
+  tax_amount numeric(10,2) default 0,
+  total_amount numeric(10,2) not null,
+  coupon_id uuid references coupons(id),
+  coupon_code text,
+  shipping_address jsonb not null,
+  whatsapp_number text,
+  razorpay_order_id text unique,
+  razorpay_payment_id text,
+  razorpay_signature text,
+  courier_name text,
+  tracking_number text,
+  tracking_url text,
+  estimated_delivery text,
+  notes text,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+create index if not exists idx_orders_profile on orders(profile_id);
+create index if not exists idx_orders_status on orders(status);
+create index if not exists idx_orders_payment_status on orders(payment_status);
+create index if not exists idx_orders_razorpay_order_id on orders(razorpay_order_id);
+create index if not exists idx_orders_number on orders(order_number);
+
+-- ── Order Items ───────────────────────────────────────────────
+create table if not exists order_items (
+  id uuid primary key default uuid_generate_v4(),
+  order_id uuid references orders(id) on delete cascade not null,
+  product_id uuid references products(id) not null,
+  product_name text not null,
+  product_slug text not null,
+  image_url text,
+  volume_ml int,
+  concentration text,
+  quantity int not null,
+  unit_price numeric(10,2) not null,
+  total_price numeric(10,2) not null
+);
+create index if not exists idx_order_items_order on order_items(order_id);
+
+-- ── Payments ─────────────────────────────────────────────────
+create table if not exists payments (
+  id uuid primary key default uuid_generate_v4(),
+  order_id uuid references orders(id) on delete cascade not null,
+  razorpay_order_id text,
+  razorpay_payment_id text,
+  amount numeric(10,2) not null,
+  currency text default 'INR',
+  status text not null,
+  method text,
+  webhook_verified boolean default false,
+  raw_response jsonb,
+  created_at timestamptz default now()
+);
+
+-- ── Banners ───────────────────────────────────────────────────
+create table if not exists banners (
+  id uuid primary key default uuid_generate_v4(),
+  title text,
+  subtitle text,
+  desktop_image_url text not null,
+  mobile_image_url text,
+  cta_label text,
+  cta_url text,
+  text_alignment text default 'left' check (text_alignment in ('left','center','right')),
+  is_active boolean default true,
+  display_order int default 0,
+  start_date timestamptz,
+  end_date timestamptz,
+  created_at timestamptz default now()
+);
+
+-- ── Promo Bars ────────────────────────────────────────────────
+create table if not exists promo_bars (
+  id uuid primary key default uuid_generate_v4(),
+  text text not null,
+  link_url text,
+  link_label text,
+  is_active boolean default true,
+  display_order int default 0,
+  start_date timestamptz,
+  end_date timestamptz,
+  created_at timestamptz default now()
+);
+
+-- ── Offers ────────────────────────────────────────────────────
+create table if not exists offers (
+  id uuid primary key default uuid_generate_v4(),
+  name text not null,
+  offer_type text not null,
+  conditions jsonb,
+  discount_type text,
+  discount_value numeric(10,2),
+  is_active boolean default true,
+  start_date timestamptz,
+  end_date timestamptz,
+  created_at timestamptz default now()
+);
+
+-- ── Tester Products ───────────────────────────────────────────
+create table if not exists tester_products (
+  id uuid primary key default uuid_generate_v4(),
+  product_id uuid references products(id) on delete cascade not null,
+  size_ml int not null,
+  price numeric(10,2) not null,
+  stock_quantity int default 0,
+  is_active boolean default true,
+  created_at timestamptz default now()
+);
+
+-- ── Site Settings ─────────────────────────────────────────────
+create table if not exists settings (
+  id int primary key default 1 check (id = 1), -- singleton
+  brand_name text default 'ANGLELIX',
+  brand_subtitle text default 'by Suraj',
+  logo_url text,
+  favicon_url text,
+  instagram_url text,
+  whatsapp_number text,
+  support_email text,
+  shipping_charge numeric(10,2) default 99,
+  free_shipping_min numeric(10,2) default 1499,
+  currency text default 'INR',
+  business_address text,
+  razorpay_enabled boolean default true,
+  cod_enabled boolean default false,
+  order_confirmation_message text default 'Your order has been successfully placed. We will share your shipment and tracking updates with you on WhatsApp.',
+  footer_tagline text,
+  seo_title text default 'ANGLELIX by Suraj — Luxury Fragrances',
+  seo_description text,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- ── Wishlists ─────────────────────────────────────────────────
+create table if not exists wishlists (
+  id uuid primary key default uuid_generate_v4(),
+  profile_id uuid references profiles(id) on delete cascade not null,
+  product_id uuid references products(id) on delete cascade not null,
+  created_at timestamptz default now(),
+  unique (profile_id, product_id)
+);
+
+-- ── Newsletter Subscribers ────────────────────────────────────
+create table if not exists newsletter_subscribers (
+  id uuid primary key default uuid_generate_v4(),
+  email text not null unique,
+  subscribed_at timestamptz default now()
+);
+
+-- ── Audit Logs ────────────────────────────────────────────────
+create table if not exists audit_logs (
+  id uuid primary key default uuid_generate_v4(),
+  profile_id uuid references profiles(id),
+  action text not null,
+  entity_type text,
+  entity_id uuid,
+  metadata jsonb,
+  created_at timestamptz default now()
+);
+
+-- ── Trigger: auto-create profile on signup ────────────────────
+create or replace function handle_new_user()
+returns trigger language plpgsql security definer as $$
+begin
+  insert into profiles (auth_user_id, email, first_name, last_name)
+  values (
+    new.id,
+    new.email,
+    coalesce(new.raw_user_meta_data->>'first_name', ''),
+    coalesce(new.raw_user_meta_data->>'last_name', '')
+  );
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure handle_new_user();
+
+-- ── Trigger: update updated_at ────────────────────────────────
+create or replace function update_updated_at()
+returns trigger language plpgsql as $$
+begin new.updated_at = now(); return new; end;
+$$;
+
+create trigger products_updated_at before update on products for each row execute procedure update_updated_at();
+create trigger orders_updated_at before update on orders for each row execute procedure update_updated_at();
+create trigger profiles_updated_at before update on profiles for each row execute procedure update_updated_at();
+create trigger settings_updated_at before update on settings for each row execute procedure update_updated_at();
+
+-- ============================================================
+-- ROW LEVEL SECURITY POLICIES
+-- ============================================================
+
+alter table profiles enable row level security;
+alter table addresses enable row level security;
+alter table orders enable row level security;
+alter table order_items enable row level security;
+alter table wishlists enable row level security;
+
+-- Profiles: users can only read/update their own
+create policy "profiles_select_own" on profiles for select using (auth.uid() = auth_user_id);
+create policy "profiles_update_own" on profiles for update using (auth.uid() = auth_user_id);
+
+-- Addresses: users can CRUD their own
+create policy "addresses_select_own" on addresses for select using (
+  profile_id in (select id from profiles where auth_user_id = auth.uid())
+);
+create policy "addresses_insert_own" on addresses for insert with check (
+  profile_id in (select id from profiles where auth_user_id = auth.uid())
+);
+create policy "addresses_update_own" on addresses for update using (
+  profile_id in (select id from profiles where auth_user_id = auth.uid())
+);
+create policy "addresses_delete_own" on addresses for delete using (
+  profile_id in (select id from profiles where auth_user_id = auth.uid())
+);
+
+-- Orders: users can only view their own; guests via guest_email
+create policy "orders_select_own" on orders for select using (
+  profile_id in (select id from profiles where auth_user_id = auth.uid())
+);
+
+-- Order items: via order ownership
+create policy "order_items_select_own" on order_items for select using (
+  order_id in (select id from orders where profile_id in (select id from profiles where auth_user_id = auth.uid()))
+);
+
+-- Wishlists: own only
+create policy "wishlists_own" on wishlists for all using (
+  profile_id in (select id from profiles where auth_user_id = auth.uid())
+);
+
+-- Public read for products, categories, etc.
+alter table products enable row level security;
+alter table categories enable row level security;
+alter table fragrance_families enable row level security;
+alter table banners enable row level security;
+alter table promo_bars enable row level security;
+alter table settings enable row level security;
+
+create policy "products_public_read" on products for select using (is_published = true);
+create policy "categories_public_read" on categories for select using (is_active = true);
+create policy "fragrance_families_public_read" on fragrance_families for select using (true);
+create policy "banners_public_read" on banners for select using (is_active = true);
+create policy "promo_bars_public_read" on promo_bars for select using (is_active = true);
+create policy "settings_public_read" on settings for select using (true);
