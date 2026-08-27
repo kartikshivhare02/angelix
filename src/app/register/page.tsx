@@ -30,8 +30,11 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       const supabase = createClient();
-      const { data, error } = await supabase.auth.signUp({
-        email: values.email.trim().toLowerCase(),
+      const cleanEmail = values.email.trim().toLowerCase();
+
+      // First attempt direct client signup
+      let { data, error } = await supabase.auth.signUp({
+        email: cleanEmail,
         password: values.password,
         options: {
           data: {
@@ -41,6 +44,43 @@ export default function RegisterPage() {
           },
         },
       });
+
+      // If email rate limit or confirmation error occurs, fallback to server API
+      if (error && (error.message.includes("rate limit") || error.status === 429)) {
+        const res = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: cleanEmail,
+            password: values.password,
+            first_name: values.first_name,
+            last_name: values.last_name,
+            phone: values.phone,
+          }),
+        });
+        const serverData = await res.json();
+        if (serverData.error) {
+          toast.error(serverData.error);
+          setLoading(false);
+          return;
+        }
+
+        // Auto sign-in now that user is confirmed
+        const signInRes = await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password: values.password,
+        });
+
+        if (signInRes.data.session) {
+          toast.success("Account created! Welcome to ANGLELIX.");
+          router.push("/account");
+        } else {
+          toast.success("Account created! Please sign in.");
+          router.push("/login");
+        }
+        router.refresh();
+        return;
+      }
 
       if (error) {
         toast.error(error.message);
@@ -55,7 +95,7 @@ export default function RegisterPage() {
             auth_user_id: data.user.id,
             first_name: values.first_name.trim(),
             last_name: values.last_name.trim(),
-            email: values.email.trim().toLowerCase(),
+            email: cleanEmail,
             phone: values.phone.trim(),
             role: "customer",
           },

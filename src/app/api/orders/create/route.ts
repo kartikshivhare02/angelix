@@ -127,21 +127,44 @@ export async function POST(req: NextRequest) {
     const total = Math.max(0, subtotal - discount + shipping);
     const orderNumber = generateOrderNumber();
 
-    // 5. Get current user profile (if logged in)
-    const { data: { user } } = await supabase.auth.getUser();
-    let profileId: string | null = null;
-    if (user) {
-      const { data: profile } = await adminClient
-        .from("profiles")
-        .select("id")
-        .or(`auth_user_id.eq.${user.id},id.eq.${user.id}`)
-        .maybeSingle();
-      profileId = profile?.id ?? user.id;
-    }
-
     const whatsappNumber = shipping_address.whatsapp_same
       ? shipping_address.phone
       : (shipping_address.whatsapp || shipping_address.phone);
+
+    // 5. Get current user profile (or create if missing)
+    const { data: { user } } = await supabase.auth.getUser();
+    let profileId: string | null = null;
+
+    if (user) {
+      try {
+        const { data: profile } = await adminClient
+          .from("profiles")
+          .select("id")
+          .eq("auth_user_id", user.id)
+          .maybeSingle();
+
+        if (profile?.id) {
+          profileId = profile.id;
+        } else {
+          const { data: newProfile } = await adminClient
+            .from("profiles")
+            .upsert({
+              auth_user_id: user.id,
+              first_name: shipping_address.first_name || user.user_metadata?.first_name || "",
+              last_name: shipping_address.last_name || user.user_metadata?.last_name || "",
+              email: (user.email || shipping_address.email || "").toLowerCase(),
+              phone: shipping_address.phone || "",
+              whatsapp_number: whatsappNumber,
+              role: "customer",
+            }, { onConflict: "auth_user_id" })
+            .select("id")
+            .single();
+          profileId = newProfile?.id || null;
+        }
+      } catch {
+        profileId = null;
+      }
+    }
 
     // 6. Create order in DB using adminClient
     const { data: order, error: orderError } = await adminClient
