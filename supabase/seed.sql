@@ -25,8 +25,7 @@ insert into categories (name, slug, display_order) values
   ('Unisex', 'unisex', 3),
   ('Best Sellers', 'best-sellers', 4),
   ('New Arrivals', 'new-arrivals', 5),
-  ('Gift Sets', 'gift-sets', 6),
-  ('Solid Perfumes', 'solid-perfumes', 7)
+  ('Gift Sets', 'gift-sets', 6)
 on conflict (slug) do nothing;
 
 -- Promo bars

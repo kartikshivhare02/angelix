@@ -469,8 +469,7 @@ on conflict (slug) do nothing;
 -- Categories
 insert into categories (name, slug, display_order) values
   ('Men', 'men', 1), ('Women', 'women', 2), ('Unisex', 'unisex', 3),
-  ('Best Sellers', 'best-sellers', 4), ('New Arrivals', 'new-arrivals', 5), ('Gift Sets', 'gift-sets', 6),
-  ('Solid Perfumes', 'solid-perfumes', 7)
+  ('Best Sellers', 'best-sellers', 4), ('New Arrivals', 'new-arrivals', 5), ('Gift Sets', 'gift-sets', 6)
 on conflict (slug) do nothing;
 
 -- Promo bars
