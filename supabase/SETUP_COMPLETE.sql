@@ -407,6 +407,7 @@ alter table settings enable row level security;
 -- Drop existing policies first to avoid conflicts
 drop policy if exists "profiles_select_own" on profiles;
 drop policy if exists "profiles_update_own" on profiles;
+drop policy if exists "profiles_insert_own" on profiles;
 drop policy if exists "addresses_select_own" on addresses;
 drop policy if exists "addresses_insert_own" on addresses;
 drop policy if exists "addresses_update_own" on addresses;
