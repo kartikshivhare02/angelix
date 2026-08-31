@@ -4,6 +4,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { CartItem } from "@/lib/types";
 import { toast } from "sonner";
+import { formatProductSize } from "@/lib/utils";
 
 interface CartStore {
   items: CartItem[];
@@ -43,7 +44,7 @@ export const useCart = create<CartStore>()(
           return { items: [...state.items, incoming] };
         });
         toast.success(`${incoming.name} added to cart`, {
-          description: `${incoming.volume_ml}ml · ${incoming.concentration}`,
+          description: `${formatProductSize(incoming.volume_ml, incoming)} · ${incoming.concentration}`,
         });
         get().openCart();
       },

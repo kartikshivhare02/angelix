@@ -23,6 +23,55 @@ export function generateOrderNumber(): string {
   return `ANG-${year}-${randomStr}`;
 }
 
+/**
+ * Check whether a product, category, or item represents a Solid formulation (Solid Perfume, Wax, Balm, Butter).
+ */
+export function isSolidProduct(productOrCategory?: any): boolean {
+  if (!productOrCategory) return false;
+
+  if (typeof productOrCategory === "string") {
+    const s = productOrCategory.toLowerCase();
+    return s.includes("solid") || s.includes("wax") || s.includes("balm") || s.includes("butter") || s.includes("gram") || s.includes("gm");
+  }
+
+  const categoryStr = typeof productOrCategory.category === "string"
+    ? productOrCategory.category
+    : productOrCategory.category?.name || productOrCategory.category?.slug || productOrCategory.category_name || "";
+
+  const concentration = productOrCategory.concentration || "";
+  const name = productOrCategory.name || productOrCategory.product_name || "";
+  const unit = productOrCategory.unit || "";
+  const slug = productOrCategory.slug || productOrCategory.product_slug || "";
+
+  const combined = `${categoryStr} ${concentration} ${name} ${unit} ${slug}`.toLowerCase();
+
+  return (
+    combined.includes("solid") ||
+    combined.includes("wax") ||
+    combined.includes("balm") ||
+    combined.includes("butter") ||
+    combined.includes("gram") ||
+    combined.includes(" gm") ||
+    combined.endsWith("g")
+  );
+}
+
+/**
+ * Get unit string ('g' for solids, 'ml' for liquids/sprays)
+ */
+export function getProductUnit(productOrCategory?: any): "g" | "ml" {
+  return isSolidProduct(productOrCategory) ? "g" : "ml";
+}
+
+/**
+ * Format size with correct unit (e.g. "100g" for solid perfumes, "100ml" for liquids)
+ */
+export function formatProductSize(size: number | string | null | undefined, productOrCategory?: any): string {
+  const num = Number(size) || 100;
+  const unit = getProductUnit(productOrCategory);
+  return `${num}${unit}`;
+}
+
 /** Get human-readable order status label */
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   pending:           "Order Placed",

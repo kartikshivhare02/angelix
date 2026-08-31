@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/lib/types";
+import { formatProductSize } from "@/lib/utils";
 
 interface Props {
   product?: Product | null;
@@ -85,7 +86,7 @@ export function FeaturedFragrance({ product }: Props) {
               </p>
             )}
             <p className="label-caps" style={{ color: "var(--color-text-muted)" }}>
-              {product.concentration} · {product.volume_ml}ml
+              {product.concentration} · {formatProductSize(product.volume_ml, product)}
             </p>
             {product.gender && (
               <p className="label-caps" style={{ color: "var(--color-text-muted)" }}>

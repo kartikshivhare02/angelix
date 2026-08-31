@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Minus, Plus, X, ShoppingBag, ArrowRight } from "lucide-react";
 import { useCart } from "@/lib/cart-store";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, formatProductSize } from "@/lib/utils";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -101,7 +101,7 @@ export default function CartPage() {
                       {item.name}
                     </h3>
                     <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.75rem", color: "var(--color-text-muted)" }}>
-                      {item.volume_ml}ml · {item.concentration}
+                      {formatProductSize(item.volume_ml, item)} · {item.concentration}
                     </p>
                   </Link>
                   <button onClick={() => removeItem(item.product_id, item.volume_ml)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-text-muted)", padding: "4px" }}>

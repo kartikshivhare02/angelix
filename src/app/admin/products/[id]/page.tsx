@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { ArrowLeft, Save, Trash2, Eye, AlertTriangle, X } from "lucide-react";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, isSolidProduct } from "@/lib/utils";
 import { ImageUploadPicker } from "@/components/admin/ImageUploadPicker";
 import { ProductGalleryManager } from "@/components/admin/ProductGalleryManager";
 
@@ -403,18 +403,37 @@ export default function EditProductPage() {
                   <option value="EDP">Eau de Parfum (EDP)</option>
                   <option value="EDT">Eau de Toilette (EDT)</option>
                   <option value="EDC">Eau de Cologne (EDC)</option>
+                  <option value="Solid Perfume">Solid Perfume (Wax / Balm)</option>
+                  <option value="Attar">Pure Attar / Oil</option>
                 </select>
               </div>
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
               <div>
-                <label style={labelStyle}>Volume (ml)</label>
+                <label style={labelStyle}>
+                  {isSolidProduct({
+                    category: categories.find((c) => c.id === form.category_id)?.name,
+                    concentration: form.concentration,
+                    name: form.name,
+                  })
+                    ? "Net Weight (g)"
+                    : "Volume (ml)"}
+                </label>
                 <input
                   type="number"
                   className="input-base"
                   value={form.volume_ml}
                   onChange={(e) => set("volume_ml", e.target.value)}
+                  placeholder={
+                    isSolidProduct({
+                      category: categories.find((c) => c.id === form.category_id)?.name,
+                      concentration: form.concentration,
+                      name: form.name,
+                    })
+                      ? "e.g. 50 or 100"
+                      : "100"
+                  }
                 />
               </div>
               <div>

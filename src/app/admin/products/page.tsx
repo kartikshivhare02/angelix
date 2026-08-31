@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { Plus, Search, Pencil, Trash2, ToggleLeft, ToggleRight, Eye, Sparkles, Flame, Package, AlertTriangle, X } from "lucide-react";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, formatProductSize } from "@/lib/utils";
 import { toast } from "sonner";
 
 interface AdminProduct {
@@ -258,7 +258,7 @@ export default function AdminProductsPage() {
                   <td style={{ padding: "1rem", fontFamily: "var(--font-sans)", fontSize: "0.8rem", color: "#555" }}>
                     <p>{p.gender ?? "Unisex"}</p>
                     <p style={{ fontSize: "0.72rem", color: "#999" }}>
-                      {p.concentration ?? "EDP"} {p.volume_ml ? `· ${p.volume_ml}ml` : ""}
+                      {p.concentration ?? "EDP"} {p.volume_ml ? `· ${formatProductSize(p.volume_ml, p)}` : ""}
                     </p>
                   </td>
 

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, formatProductSize } from "@/lib/utils";
 import { ORDER_STATUS_LABELS, ORDER_STATUS_STEPS } from "@/lib/utils";
 import type { Order, OrderStatus } from "@/lib/types";
 import { CheckCircle, Circle, ArrowLeft, ExternalLink } from "lucide-react";
@@ -148,7 +148,7 @@ export default function OrderDetailPage() {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem", fontWeight: 600 }}>{item.product_name}</p>
                     <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.75rem", color: "var(--color-text-muted)", marginTop: "0.2rem" }}>
-                      {item.volume_ml}ML · {item.concentration} · Qty: {item.quantity}
+                      {formatProductSize(item.volume_ml, item)} · {item.concentration} · Qty: {item.quantity}
                     </p>
                   </div>
                   <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem", fontWeight: 600, flexShrink: 0 }}>

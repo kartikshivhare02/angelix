@@ -5,7 +5,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Minus, Plus, ShoppingBag } from "lucide-react";
 import { useCart } from "@/lib/cart-store";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, formatProductSize } from "@/lib/utils";
 
 export function CartDrawer() {
   const { items, isOpen, closeCart, removeItem, updateQuantity, subtotal } = useCart();
@@ -172,7 +172,7 @@ export function CartDrawer() {
                             )}
                           </div>
                           <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.75rem", color: "var(--color-text-muted)" }}>
-                            {item.volume_ml}ml · {item.concentration}
+                            {formatProductSize(item.volume_ml, item)} · {item.concentration}
                           </p>
                           <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.9rem", fontWeight: 600 }}>
                             {formatPrice(item.price)}

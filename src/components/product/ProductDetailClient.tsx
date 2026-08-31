@@ -6,7 +6,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Minus, Plus, ShoppingBag, Zap, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from "lucide-react";
 import { Product } from "@/lib/types";
-import { formatPrice, computeDiscountedPrice } from "@/lib/utils";
+import { formatPrice, computeDiscountedPrice, formatProductSize, isSolidProduct } from "@/lib/utils";
 import { useCart } from "@/lib/cart-store";
 import { toast } from "sonner";
 import { checkAuthOrRedirect } from "@/lib/auth-check";
@@ -107,7 +107,7 @@ export function ProductDetailClient({ product }: Props) {
         <div style={{ paddingTop: "1rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
           {[
             ["Concentration", product.concentration],
-            ["Volume", `${product.volume_ml}ml`],
+            [isSolidProduct(product) ? "Net Weight" : "Volume", formatProductSize(product.volume_ml, product)],
             ["Longevity", product.longevity],
             ["Projection", product.projection],
             ["Gender", product.gender],
@@ -349,7 +349,7 @@ export function ProductDetailClient({ product }: Props) {
               {product.name}
             </h1>
             <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem", color: "var(--color-text-muted)", marginBottom: "1rem" }}>
-              {product.volume_ml}ml · {product.concentration} · {product.gender}
+              {formatProductSize(product.volume_ml, product)} · {product.concentration} · {product.gender}
             </p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
               {[...(product.top_notes ?? []), ...(product.middle_notes ?? [])].slice(0, 5).map((n) => (
@@ -402,7 +402,7 @@ export function ProductDetailClient({ product }: Props) {
                 }}
               >
                 <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.82rem", fontWeight: 700 }}>
-                  {product.volume_ml || 100}ml Full
+                  {formatProductSize(product.volume_ml || 100, product)} Full
                 </span>
                 <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.75rem", color: "var(--color-text-muted)" }}>
                   {formatPrice(fullBottlePrice)}

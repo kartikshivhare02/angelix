@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useCart } from "@/lib/cart-store";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, formatProductSize } from "@/lib/utils";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -399,7 +399,7 @@ export default function CheckoutPage() {
                       {item.name}
                     </p>
                     <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.72rem", color: "#888" }}>
-                      {item.volume_ml}ml · Qty: {item.quantity}
+                      {formatProductSize(item.volume_ml, item)} · Qty: {item.quantity}
                     </p>
                   </div>
                   <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem", fontWeight: 700 }}>
@@ -907,7 +907,7 @@ export default function CheckoutPage() {
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: "0.85rem" }}>{item.name}</p>
                         <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.72rem", color: "#888" }}>
-                          {item.volume_ml}ml · Qty: {item.quantity}
+                          {formatProductSize(item.volume_ml, item)} · Qty: {item.quantity}
                         </p>
                       </div>
                       <p style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: "0.88rem" }}>

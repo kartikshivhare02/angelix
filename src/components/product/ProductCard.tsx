@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Plus, Check } from "lucide-react";
 import { Product } from "@/lib/types";
-import { formatPrice, computeDiscountedPrice } from "@/lib/utils";
+import { formatPrice, computeDiscountedPrice, formatProductSize } from "@/lib/utils";
 import { useCart } from "@/lib/cart-store";
 
 import { checkAuthOrRedirect } from "@/lib/auth-check";
@@ -241,7 +241,7 @@ export function ProductCard({ product }: Props) {
             {product.name}
             {" "}
             <span style={{ fontWeight: 400, opacity: 0.55, fontSize: "0.78em" }}>
-              ({product.volume_ml}ml)
+              ({formatProductSize(product.volume_ml, product)})
             </span>
           </h3>
 

@@ -7,7 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { Product } from "@/lib/types";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, formatProductSize } from "@/lib/utils";
 
 interface Props {
   isOpen: boolean;
@@ -147,7 +147,7 @@ export function SearchModal({ isOpen, onClose }: Props) {
                       <div>
                         <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.9rem", fontWeight: 500 }}>{product.name}</p>
                         <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.75rem", color: "var(--color-text-muted)" }}>
-                          {product.volume_ml}ml · {product.concentration}
+                          {formatProductSize(product.volume_ml, product)} · {product.concentration}
                         </p>
                       </div>
                       <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.9rem", fontWeight: 600 }}>

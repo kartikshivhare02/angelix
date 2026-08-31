@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, formatProductSize } from "@/lib/utils";
 import { ArrowLeft, Package, Truck, CheckCircle, Clock, XCircle } from "lucide-react";
 
 const STATUS_OPTIONS = [
@@ -152,7 +152,7 @@ export default function AdminOrderDetailPage() {
                   )}
                   <div style={{ flex: 1 }}>
                     <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem", fontWeight: 600 }}>{item.product_name}</p>
-                    <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.78rem", color: "#999" }}>{item.volume_ml}ml · {item.concentration}</p>
+                    <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.78rem", color: "#999" }}>{formatProductSize(item.volume_ml, item)} · {item.concentration}</p>
                   </div>
                   <div style={{ textAlign: "right" }}>
                     <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem", fontWeight: 600 }}>{formatPrice(item.total_price)}</p>
