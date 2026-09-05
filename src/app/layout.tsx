@@ -13,8 +13,11 @@ export const metadata: Metadata = {
     "Discover ANGELIX by Suraj — a sophisticated fragrance house offering premium, handcrafted perfumes. Explore our signature collection.",
   keywords: ["luxury perfume", "fragrance", "ANGELIX", "Suraj", "premium scent", "oud", "leather", "floral"],
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.png", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
     apple: "/apple-icon.png",
   },
   openGraph: {
