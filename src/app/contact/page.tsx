@@ -102,7 +102,7 @@ export default function ContactPage() {
                 </h2>
                 <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
                   <a
-                    href="mailto:hello@anglelix.com"
+                    href="mailto:Surajxsingh412@gmail.com"
                     style={{ display: "flex", alignItems: "center", gap: "0.875rem", textDecoration: "none", color: "var(--color-text)" }}
                   >
                     <div style={{ width: "40px", height: "40px", border: "1px solid var(--color-border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -110,12 +110,12 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <p className="label-caps" style={{ color: "var(--color-text-muted)", marginBottom: "0.2rem" }}>Email</p>
-                      <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem" }}>hello@anglelix.com</p>
+                      <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem" }}>Surajxsingh412@gmail.com</p>
                     </div>
                   </a>
 
                   <a
-                    href="https://wa.me/919999999999"
+                    href="https://wa.me/917067697646"
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{ display: "flex", alignItems: "center", gap: "0.875rem", textDecoration: "none", color: "var(--color-text)" }}
@@ -125,12 +125,12 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <p className="label-caps" style={{ color: "var(--color-text-muted)", marginBottom: "0.2rem" }}>WhatsApp</p>
-                      <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem" }}>+91 99999 99999</p>
+                      <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem" }}>+91 70676 97646</p>
                     </div>
                   </a>
 
                   <a
-                    href="https://instagram.com/anglelix"
+                    href="https://instagram.com/angelix"
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{ display: "flex", alignItems: "center", gap: "0.875rem", textDecoration: "none", color: "var(--color-text)" }}
@@ -140,7 +140,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <p className="label-caps" style={{ color: "var(--color-text-muted)", marginBottom: "0.2rem" }}>Instagram</p>
-                      <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem" }}>@anglelix</p>
+                      <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem" }}>@angelix</p>
                     </div>
                   </a>
                 </div>

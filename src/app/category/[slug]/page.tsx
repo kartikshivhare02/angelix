@@ -80,10 +80,10 @@ async function getCategoryInfoAndProducts(slug: string): Promise<{ label: string
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const result = await getCategoryInfoAndProducts(slug);
-  if (!result) return { title: "Category Not Found — ANGLELIX" };
+  if (!result) return { title: "Category Not Found — ANGELIX" };
   return {
-    title: `${result.label} Fragrances — ANGLELIX by Suraj`,
-    description: `Browse all ${result.label.toLowerCase()} fragrances from ANGLELIX by Suraj.`,
+    title: `${result.label} Fragrances — ANGELIX by Suraj`,
+    description: `Browse all ${result.label.toLowerCase()} fragrances from ANGELIX by Suraj.`,
   };
 }
 

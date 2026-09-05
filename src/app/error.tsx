@@ -6,7 +6,7 @@ import { AlertTriangle } from "lucide-react";
 
 export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
-    console.error("[ANGLELIX Error]", error);
+    console.error("[ANGELIX Error]", error);
   }, [error]);
 
   return (
@@ -48,8 +48,8 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
       >
         We apologise for the inconvenience. Please try again or return to the homepage.
         If this issue persists, contact us at{" "}
-        <a href="mailto:hello@anglelix.com" style={{ color: "var(--color-text)" }}>
-          hello@anglelix.com
+        <a href="mailto:Surajxsingh412@gmail.com" style={{ color: "var(--color-text)" }}>
+          Surajxsingh412@gmail.com
         </a>.
       </p>
 

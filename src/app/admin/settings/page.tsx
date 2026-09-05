@@ -4,23 +4,23 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 const DEFAULTS = {
-  brand_name: "ANGLELIX",
+  brand_name: "ANGELIX",
   brand_subtitle: "by Suraj",
-  logo_url: "",
-  favicon_url: "",
-  instagram_url: "",
-  whatsapp_number: "",
-  support_email: "",
+  logo_url: "/logo.png",
+  favicon_url: "/favicon.ico",
+  instagram_url: "https://instagram.com/angelix",
+  whatsapp_number: "+917067697646",
+  support_email: "Surajxsingh412@gmail.com",
   shipping_charge: 99,
   free_shipping_min: 1499,
   currency: "INR",
-  business_address: "",
+  business_address: "India",
   razorpay_enabled: true,
-  cod_enabled: false,
+  cod_enabled: true,
   order_confirmation_message: "Your order has been placed. We will share tracking updates on WhatsApp.",
-  footer_tagline: "",
-  seo_title: "",
-  seo_description: "",
+  footer_tagline: "A sophisticated fragrance house crafting premium scents for the discerning.",
+  seo_title: "ANGELIX by Suraj — Premium Luxury Fragrances",
+  seo_description: "Discover handcrafted luxury perfumes by ANGELIX by Suraj.",
 };
 
 type Settings = typeof DEFAULTS;
@@ -83,13 +83,13 @@ export default function AdminSettingsPage() {
         {/* Contact & Social */}
         <Card title="Contact & Social">
           <Row label="Instagram URL">
-            <input className="input-base" value={settings.instagram_url ?? ""} onChange={(e) => set("instagram_url", e.target.value)} placeholder="https://instagram.com/anglelix" />
+            <input className="input-base" value={settings.instagram_url ?? ""} onChange={(e) => set("instagram_url", e.target.value)} placeholder="https://instagram.com/angelix" />
           </Row>
           <Row label="WhatsApp Number">
-            <input className="input-base" value={settings.whatsapp_number ?? ""} onChange={(e) => set("whatsapp_number", e.target.value)} placeholder="+91 98765 43210" />
+            <input className="input-base" value={settings.whatsapp_number ?? ""} onChange={(e) => set("whatsapp_number", e.target.value)} placeholder="+91 70676 97646" />
           </Row>
           <Row label="Support Email">
-            <input type="email" className="input-base" value={settings.support_email ?? ""} onChange={(e) => set("support_email", e.target.value)} placeholder="support@anglelix.com" />
+            <input type="email" className="input-base" value={settings.support_email ?? ""} onChange={(e) => set("support_email", e.target.value)} placeholder="Surajxsingh412@gmail.com" />
           </Row>
           <Row label="Business Address">
             <textarea className="input-base" value={settings.business_address ?? ""} onChange={(e) => set("business_address", e.target.value)} rows={3} placeholder="Full business address..." style={{ resize: "vertical" }} />
@@ -148,10 +148,10 @@ export default function AdminSettingsPage() {
         {/* SEO */}
         <Card title="SEO Defaults">
           <Row label="Default SEO Title">
-            <input className="input-base" value={settings.seo_title ?? ""} onChange={(e) => set("seo_title", e.target.value)} placeholder="ANGLELIX by Suraj — Premium Luxury Fragrances" />
+            <input className="input-base" value={settings.seo_title ?? ""} onChange={(e) => set("seo_title", e.target.value)} placeholder="ANGELIX by Suraj — Premium Luxury Fragrances" />
           </Row>
           <Row label="Default SEO Description">
-            <textarea className="input-base" value={settings.seo_description ?? ""} onChange={(e) => set("seo_description", e.target.value)} rows={3} placeholder="Discover the ANGLELIX fragrance collection..." style={{ resize: "vertical" }} />
+            <textarea className="input-base" value={settings.seo_description ?? ""} onChange={(e) => set("seo_description", e.target.value)} rows={3} placeholder="Discover the ANGELIX fragrance collection..." style={{ resize: "vertical" }} />
           </Row>
         </Card>
 

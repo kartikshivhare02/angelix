@@ -84,7 +84,7 @@ export function HeroBanner({ initialBanners = [] }: HeroBannerProps) {
           <div className="banner-desktop-media" style={{ position: "absolute", inset: 0 }}>
             <Image
               src={banner.desktop_image_url}
-              alt={banner.title ?? "ANGLELIX"}
+              alt={banner.title ?? "ANGELIX"}
               fill
               priority
               unoptimized
@@ -97,7 +97,7 @@ export function HeroBanner({ initialBanners = [] }: HeroBannerProps) {
           <div className="banner-mobile-media" style={{ position: "absolute", inset: 0 }}>
             <Image
               src={banner.mobile_image_url || banner.desktop_image_url}
-              alt={banner.title ?? "ANGLELIX"}
+              alt={banner.title ?? "ANGELIX"}
               fill
               priority
               unoptimized

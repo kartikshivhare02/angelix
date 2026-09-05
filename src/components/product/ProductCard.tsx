@@ -123,7 +123,7 @@ export function ProductCard({ product }: Props) {
                 textTransform: "uppercase",
               }}
             >
-              ANGLELIX
+              ANGELIX
             </div>
           )}
 

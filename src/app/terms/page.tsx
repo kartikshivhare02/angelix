@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Terms & Conditions — ANGLELIX by Suraj",
-  description: "Read the Terms & Conditions for ANGLELIX by Suraj — governing the use of our website and services.",
+  title: "Terms & Conditions — ANGELIX by Suraj",
+  description: "Read the Terms & Conditions for ANGELIX by Suraj — governing the use of our website and services.",
 };
 
 export default function TermsPage() {
@@ -21,7 +21,7 @@ export default function TermsPage() {
       <div className="legal-body">
         <h2>1. Acceptance of Terms</h2>
         <p>
-          By accessing or using the ANGLELIX website (anglelix.com), you agree to be bound by these Terms &amp; Conditions and our Privacy Policy. If you do not agree, please do not use our website.
+          By accessing or using the ANGELIX website, you agree to be bound by these Terms &amp; Conditions and our Privacy Policy. If you do not agree, please do not use our website.
         </p>
 
         <h2>2. Products and Descriptions</h2>
@@ -46,7 +46,7 @@ export default function TermsPage() {
 
         <h2>6. Intellectual Property</h2>
         <p>
-          All content on this website — including the ANGLELIX name, logo, photographs, copy, and design — is the intellectual property of ANGLELIX by Suraj. You may not use, reproduce, or distribute any content without our prior written permission.
+          All content on this website — including the ANGELIX name, logo, photographs, copy, and design — is the intellectual property of ANGELIX by Suraj. You may not use, reproduce, or distribute any content without our prior written permission.
         </p>
 
         <h2>7. User Accounts</h2>
@@ -66,7 +66,7 @@ export default function TermsPage() {
 
         <h2>9. Limitation of Liability</h2>
         <p>
-          To the maximum extent permitted by law, ANGLELIX shall not be liable for any indirect, incidental, or consequential damages arising from your use of our website or products. Our liability is limited to the amount paid for the specific product in question.
+          To the maximum extent permitted by law, ANGELIX shall not be liable for any indirect, incidental, or consequential damages arising from your use of our website or products. Our liability is limited to the amount paid for the specific product in question.
         </p>
 
         <h2>10. Governing Law</h2>
@@ -81,7 +81,7 @@ export default function TermsPage() {
 
         <h2>12. Contact</h2>
         <p>
-          For queries regarding these Terms, contact us at <a href="mailto:hello@anglelix.com">hello@anglelix.com</a>.
+          For queries regarding these Terms, contact us at <a href="mailto:Surajxsingh412@gmail.com">Surajxsingh412@gmail.com</a>.
         </p>
       </div>
 

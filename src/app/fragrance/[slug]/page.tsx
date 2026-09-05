@@ -43,10 +43,10 @@ async function getProductsByFamily(slug: string): Promise<Product[]> {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const meta = FAMILY_META[slug];
-  if (!meta) return { title: "Fragrances — ANGLELIX" };
+  if (!meta) return { title: "Fragrances — ANGELIX" };
   return {
-    title: `${meta.name} Fragrances — ANGLELIX by Suraj`,
-    description: `Explore ${meta.name.toLowerCase()} fragrances from ANGLELIX. ${meta.description}`,
+    title: `${meta.name} Fragrances — ANGELIX by Suraj`,
+    description: `Explore ${meta.name.toLowerCase()} fragrances from ANGELIX. ${meta.description}`,
   };
 }
 

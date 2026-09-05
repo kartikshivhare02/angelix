@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — ANGLELIX by Suraj",
-  description: "Read the ANGLELIX Privacy Policy — how we collect, use, and protect your personal information.",
+  title: "Privacy Policy — ANGELIX by Suraj",
+  description: "Read the ANGELIX Privacy Policy — how we collect, use, and protect your personal information.",
 };
 
 export default function PrivacyPolicyPage() {
@@ -21,7 +21,7 @@ export default function PrivacyPolicyPage() {
       <div className="legal-body">
         <h2>1. Introduction</h2>
         <p>
-          ANGLELIX by Suraj (&ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;) operates the website anglelix.com. This Privacy Policy explains how we collect, use, disclose, and protect your personal information when you visit our website or make a purchase.
+          ANGELIX by Suraj (&ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;) operates this website. This Privacy Policy explains how we collect, use, disclose, and protect your personal information when you visit our website or make a purchase.
         </p>
 
         <h2>2. Information We Collect</h2>
@@ -95,7 +95,7 @@ export default function PrivacyPolicyPage() {
 
         <h2>12. Contact Us</h2>
         <p>
-          For any privacy-related questions, contact us at <a href="mailto:hello@anglelix.com">hello@anglelix.com</a>.
+          For any privacy-related questions, contact us at <a href="mailto:Surajxsingh412@gmail.com">Surajxsingh412@gmail.com</a>.
         </p>
       </div>
 

@@ -133,7 +133,7 @@ function RegisterForm() {
         });
 
         if (signInRes.data.session) {
-          toast.success("Account created! Welcome to ANGLELIX.");
+          toast.success("Account created! Welcome to ANGELIX.");
           router.push(redirectParam);
         } else {
           toast.success("Account created! Please sign in.");
@@ -164,7 +164,7 @@ function RegisterForm() {
       }
 
       if (data.session) {
-        toast.success("Account created! Welcome to ANGLELIX.");
+        toast.success("Account created! Welcome to ANGELIX.");
         router.push(redirectParam);
       } else {
         toast.success("Account created! You can now sign in.");
@@ -192,8 +192,12 @@ function RegisterForm() {
     <div className="container-site section-py" style={{ display: "flex", justifyContent: "center" }}>
       <div style={{ width: "100%", maxWidth: "480px" }}>
         <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: "1.25rem" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="ANGELIX" style={{ height: "48px", width: "auto", objectFit: "contain" }} />
+          </div>
           <p className="label-caps" style={{ color: "var(--color-text-muted)", marginBottom: "0.5rem" }}>
-            Join ANGLELIX
+            Join ANGELIX
           </p>
           <h1 className="heading-editorial" style={{ fontSize: "2.2rem" }}>
             Create Account

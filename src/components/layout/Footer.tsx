@@ -73,28 +73,18 @@ export function Footer() {
           {/* Brand */}
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
             <div>
-              <p
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/logo.png"
+                alt="ANGELIX - BY SURAJ"
                 style={{
-                  fontFamily: "var(--font-serif)",
-                  fontSize: "1.2rem",
-                  fontWeight: 600,
-                  letterSpacing: "0.2em",
-                  lineHeight: 1,
+                  height: "48px",
+                  width: "auto",
+                  objectFit: "contain",
+                  display: "block",
+                  marginBottom: "0.5rem",
                 }}
-              >
-                ANGLELIX
-              </p>
-              <p
-                style={{
-                  fontFamily: "var(--font-sans)",
-                  fontSize: "0.65rem",
-                  letterSpacing: "0.15em",
-                  color: "var(--color-text-muted)",
-                  marginTop: "2px",
-                }}
-              >
-                by Suraj
-              </p>
+              />
             </div>
             <p
               style={{
@@ -102,10 +92,10 @@ export function Footer() {
                 fontSize: "0.82rem",
                 color: "var(--color-text-muted)",
                 lineHeight: 1.6,
-                maxWidth: "200px",
+                maxWidth: "220px",
               }}
             >
-              A sophisticated fragrance house crafting premium scents for the discerning.
+              A sophisticated fragrance house crafting premium, long-lasting luxury scents for the discerning.
             </p>
           </div>
 
@@ -119,7 +109,7 @@ export function Footer() {
           <FooterLinkGroup
             title="Company"
             links={[
-              { label: "About Anglelix", href: "/about" },
+              { label: "About Angelix", href: "/about" },
               { label: "Contact Us", href: "/contact" },
               { label: "My Account", href: "/account" },
             ]}
@@ -139,9 +129,45 @@ export function Footer() {
           {/* Contact */}
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
             <p className="label-caps" style={{ color: "var(--color-text-muted)" }}>Contact Us</p>
-            <div style={{ display: "flex", gap: "1rem" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
               <a
-                href="https://wa.me/"
+                href="mailto:Surajxsingh412@gmail.com"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  fontFamily: "var(--font-sans)",
+                  fontSize: "0.82rem",
+                  color: "var(--color-text-muted)",
+                  textDecoration: "none",
+                }}
+                className="hover:text-black transition-colors"
+              >
+                <Mail size={15} strokeWidth={1.5} />
+                <span>Surajxsingh412@gmail.com</span>
+              </a>
+              <a
+                href="https://wa.me/917067697646"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  fontFamily: "var(--font-sans)",
+                  fontSize: "0.82rem",
+                  color: "var(--color-text-muted)",
+                  textDecoration: "none",
+                }}
+                className="hover:text-black transition-colors"
+              >
+                <MessageCircle size={15} strokeWidth={1.5} />
+                <span>+91 70676 97646</span>
+              </a>
+            </div>
+            <div style={{ display: "flex", gap: "1rem", marginTop: "0.25rem" }}>
+              <a
+                href="https://wa.me/917067697646"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="WhatsApp"
@@ -150,7 +176,7 @@ export function Footer() {
                 <MessageCircle size={18} strokeWidth={1.5} />
               </a>
               <a
-                href="mailto:hello@anglelix.com"
+                href="mailto:Surajxsingh412@gmail.com"
                 aria-label="Email us"
                 className="hover:opacity-50 transition-opacity"
               >
@@ -187,7 +213,7 @@ export function Footer() {
               color: "var(--color-text-light)",
             }}
           >
-            © {new Date().getFullYear()} ANGLELIX by Suraj. All rights reserved.
+            © {new Date().getFullYear()} ANGELIX by Suraj. All rights reserved.
           </p>
           <p
             style={{

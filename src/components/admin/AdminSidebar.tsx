@@ -46,9 +46,20 @@ export function AdminSidebar() {
       }}
     >
       {/* Logo */}
-      <div style={{ padding: "1.75rem 1.5rem", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-        <p style={{ fontFamily: "var(--font-serif)", fontSize: "1.1rem", color: "#fff", letterSpacing: "0.15em" }}>ANGLELIX</p>
-        <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.65rem", color: "rgba(255,255,255,0.4)", letterSpacing: "0.1em", marginTop: "2px" }}>Admin Dashboard</p>
+      <div style={{ padding: "1.25rem 1.5rem", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/logo.png"
+          alt="ANGELIX"
+          style={{
+            height: "38px",
+            width: "auto",
+            objectFit: "contain",
+            display: "block",
+            marginBottom: "0.4rem",
+          }}
+        />
+        <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.65rem", color: "rgba(255,255,255,0.5)", letterSpacing: "0.1em" }}>Admin Dashboard</p>
       </div>
 
       {/* Nav */}

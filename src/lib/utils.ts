@@ -10,13 +10,13 @@ export function formatPrice(amount: number): string {
   }).format(amount);
 }
 
-/** Generate ANGLELIX order number from sequential ID */
+/** Generate ANGELIX order number from sequential ID */
 export function formatOrderNumber(id: number): string {
   const year = new Date().getFullYear();
   return `ANG-${year}-${String(id).padStart(6, "0")}`;
 }
 
-/** Generate random ANGLELIX order number */
+/** Generate random ANGELIX order number */
 export function generateOrderNumber(): string {
   const year = new Date().getFullYear();
   const randomStr = Math.floor(100000 + Math.random() * 900000);

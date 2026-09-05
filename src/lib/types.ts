@@ -1,5 +1,5 @@
 // ============================================================
-// ANGLELIX — Core TypeScript Types
+// ANGELIX — Core TypeScript Types
 // ============================================================
 
 export interface Product {

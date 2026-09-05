@@ -102,13 +102,20 @@ export function FullscreenMenu({ isOpen, onClose }: Props) {
                 href="/"
                 onClick={onClose}
                 style={{
-                  fontFamily: "var(--font-serif)",
-                  fontSize: "1.1rem",
-                  fontWeight: 600,
-                  letterSpacing: "0.2em",
+                  display: "flex",
+                  alignItems: "center",
                 }}
               >
-                ANGLELIX
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/logo.png"
+                  alt="ANGELIX"
+                  style={{
+                    height: "38px",
+                    width: "auto",
+                    objectFit: "contain",
+                  }}
+                />
               </Link>
               <button
                 onClick={onClose}
@@ -218,7 +225,7 @@ export function FullscreenMenu({ isOpen, onClose }: Props) {
               <section style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                 {[
                   { label: "Try Our Tester", href: "/testers" },
-                  { label: "About Anglelix", href: "/about" },
+                  { label: "About Angelix", href: "/about" },
                   { label: "Login / My Account", href: "/account" },
                   { label: "Contact Us", href: "/contact" },
                 ].map((link) => (

@@ -83,7 +83,7 @@ export const useCart = create<CartStore>()(
       totalPrice: () => get().items.reduce((sum, i) => sum + i.price * i.quantity, 0),
     }),
     {
-      name: "anglelix-cart",
+      name: "angelix-cart",
       storage: createJSONStorage(() => localStorage),
     }
   )

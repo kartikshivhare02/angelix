@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Shipping Policy — ANGLELIX by Suraj",
-  description: "Read the ANGLELIX Shipping Policy — delivery timelines, costs, and tracking for your orders.",
+  title: "Shipping Policy — ANGELIX by Suraj",
+  description: "Read the ANGELIX Shipping Policy — delivery timelines, costs, and tracking for your orders.",
 };
 
 export default function ShippingPolicyPage() {
@@ -56,7 +56,7 @@ export default function ShippingPolicyPage() {
           <li><strong>Remote Locations:</strong> 5–8 business days</li>
         </ul>
         <p>
-          Delivery timelines are estimates and may vary due to courier delays, weather conditions, or local disruptions. ANGLELIX is not responsible for delays caused by third-party couriers.
+          Delivery timelines are estimates and may vary due to courier delays, weather conditions, or local disruptions. ANGELIX is not responsible for delays caused by third-party couriers.
         </p>
 
         <h2>5. Order Tracking</h2>
@@ -66,7 +66,7 @@ export default function ShippingPolicyPage() {
 
         <h2>6. Packaging</h2>
         <p>
-          All ANGLELIX orders are carefully packed to ensure the products arrive in perfect condition. Fragrances are wrapped and cushioned to prevent breakage during transit.
+          All ANGELIX orders are carefully packed to ensure the products arrive in perfect condition. Fragrances are wrapped and cushioned to prevent breakage during transit.
         </p>
 
         <h2>7. Failed Delivery Attempts</h2>
@@ -76,12 +76,12 @@ export default function ShippingPolicyPage() {
 
         <h2>8. Damaged or Lost Shipments</h2>
         <p>
-          If your order arrives damaged or is lost in transit, please contact us within <strong>48 hours</strong> of the expected delivery date at <a href="mailto:hello@anglelix.com">hello@anglelix.com</a> with your order number and photographs of the damaged packaging. We will investigate and resolve promptly.
+          If your order arrives damaged or is lost in transit, please contact us within <strong>48 hours</strong> of the expected delivery date at <a href="mailto:Surajxsingh412@gmail.com">Surajxsingh412@gmail.com</a> with your order number and photographs of the damaged packaging. We will investigate and resolve promptly.
         </p>
 
         <h2>9. Contact</h2>
         <p>
-          For shipping queries, contact us at <a href="mailto:hello@anglelix.com">hello@anglelix.com</a> or via WhatsApp.
+          For shipping queries, contact us at <a href="mailto:Surajxsingh412@gmail.com">Surajxsingh412@gmail.com</a> or via WhatsApp at <a href="https://wa.me/917067697646">+91 70676 97646</a>.
         </p>
       </div>
 

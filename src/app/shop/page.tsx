@@ -60,8 +60,8 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export const metadata = {
-  title: "Shop All Fragrances — ANGLELIX by Suraj",
-  description: "Browse the complete ANGLELIX fragrance collection — men, women, and unisex luxury perfumes crafted in India.",
+  title: "Shop All Fragrances — ANGELIX by Suraj",
+  description: "Browse the complete ANGELIX fragrance collection — men, women, and unisex luxury perfumes crafted in India.",
 };
 
 export default async function ShopPage({ searchParams }: { searchParams: Promise<SearchParams> }) {

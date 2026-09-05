@@ -26,7 +26,7 @@ export function BrandStory() {
             marginBottom: "1.5rem",
           }}
         >
-          ANGLELIX was born from a singular belief — that a truly exceptional fragrance 
+          ANGELIX was born from a singular belief — that a truly exceptional fragrance 
           should be an extension of character, not merely a scent. Founded by Suraj, 
           every bottle is crafted with obsessive attention to quality, longevity, and identity.
         </p>

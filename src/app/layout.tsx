@@ -6,18 +6,23 @@ import { CartProvider } from "@/components/providers/CartProvider";
 
 export const metadata: Metadata = {
   title: {
-    default: "ANGLELIX by Suraj — Luxury Fragrances",
-    template: "%s | ANGLELIX by Suraj",
+    default: "ANGELIX by Suraj — Luxury Fragrances",
+    template: "%s | ANGELIX by Suraj",
   },
   description:
-    "Discover ANGLELIX by Suraj — a sophisticated fragrance house offering premium, handcrafted perfumes. Explore our signature collection.",
-  keywords: ["luxury perfume", "fragrance", "ANGLELIX", "Suraj", "premium scent", "oud", "leather", "floral"],
+    "Discover ANGELIX by Suraj — a sophisticated fragrance house offering premium, handcrafted perfumes. Explore our signature collection.",
+  keywords: ["luxury perfume", "fragrance", "ANGELIX", "Suraj", "premium scent", "oud", "leather", "floral"],
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.png",
+    apple: "/apple-icon.png",
+  },
   openGraph: {
     type: "website",
     locale: "en_IN",
     url: process.env.NEXT_PUBLIC_SITE_URL,
-    siteName: "ANGLELIX by Suraj",
-    title: "ANGLELIX by Suraj — Luxury Fragrances",
+    siteName: "ANGELIX by Suraj",
+    title: "ANGELIX by Suraj — Luxury Fragrances",
     description: "A sophisticated fragrance house with a clean, modern and premium shopping experience.",
   },
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),

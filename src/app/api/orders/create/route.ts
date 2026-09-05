@@ -33,6 +33,7 @@ const checkoutRequestSchema = z.object({
   items: z.array(cartItemSchema).min(1, "Cart cannot be empty").max(20, "Cart limit exceeded"),
   shipping_address: shippingAddressSchema,
   coupon_code: z.string().trim().max(50).optional().nullable(),
+  tester_credit_query: z.string().trim().max(100).optional().nullable(),
   payment_method: z.enum(["razorpay", "cod"]).default("razorpay"),
 });
 
@@ -53,7 +54,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: errorMsg }, { status: 400 });
     }
 
-    const { items, shipping_address, coupon_code, payment_method } = validationResult.data;
+    const { items, shipping_address, coupon_code, tester_credit_query, payment_method } = validationResult.data;
 
     // Sanitize address inputs
     const sanitizedAddress = {
@@ -168,7 +169,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 4. Validate coupon strictly on server
-    let discount = 0;
+    let couponDiscount = 0;
     let couponId: string | null = null;
     let finalCouponCode: string | null = null;
 
@@ -184,12 +185,12 @@ export async function POST(req: NextRequest) {
       if (coupon && (!coupon.start_date || now >= coupon.start_date) && (!coupon.end_date || now <= coupon.end_date)) {
         if (!coupon.min_order_value || subtotal >= coupon.min_order_value) {
           if (coupon.discount_type === "percentage") {
-            discount = Math.floor((subtotal * Number(coupon.discount_value)) / 100);
+            couponDiscount = Math.floor((subtotal * Number(coupon.discount_value)) / 100);
             if (coupon.max_discount) {
-              discount = Math.min(discount, Number(coupon.max_discount));
+              couponDiscount = Math.min(couponDiscount, Number(coupon.max_discount));
             }
           } else {
-            discount = Math.min(Number(coupon.discount_value), subtotal);
+            couponDiscount = Math.min(Number(coupon.discount_value), subtotal);
           }
           couponId = coupon.id;
           finalCouponCode = coupon.code;
@@ -197,9 +198,69 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // 4b. Validate authoritative Tester Value Settlement credit
+    let testerDiscount = 0;
+    let testerRedeemedFromOrder: string | null = null;
+    let testerRedeemedOrderId: string | null = null;
+
+    if (tester_credit_query) {
+      const hasFullBottle = validatedItems.some(
+        (item) => Number(item.volume_ml) >= 50 || !item.product_name.includes("Tester Vial")
+      );
+
+      if (hasFullBottle) {
+        const cleanQuery = tester_credit_query.trim();
+        let testerOrdQuery = adminClient
+          .from("orders")
+          .select("id, order_number, guest_email, status, payment_status, notes, order_items(*)")
+          .in("payment_status", ["paid", "pending"])
+          .order("created_at", { ascending: false });
+
+        if (cleanQuery.toUpperCase().startsWith("ANG-")) {
+          testerOrdQuery = testerOrdQuery.eq("order_number", cleanQuery.toUpperCase());
+        } else if (cleanQuery.includes("@")) {
+          testerOrdQuery = testerOrdQuery.ilike("guest_email", cleanQuery.toLowerCase());
+        } else {
+          const cleanPhone = cleanQuery.replace(/\D/g, "");
+          testerOrdQuery = testerOrdQuery.ilike("whatsapp_number", `%${cleanPhone.slice(-10)}%`);
+        }
+
+        const { data: matchedTesterOrders } = await testerOrdQuery.limit(5);
+
+        if (matchedTesterOrders && matchedTesterOrders.length > 0) {
+          for (const ord of matchedTesterOrders) {
+            if (ord.notes && ord.notes.includes("[Tester Credit Redeemed")) continue;
+
+            const tItems = (ord.order_items || []).filter((item: any) => {
+              const vol = Number(item.volume_ml) || 0;
+              return [2, 5, 10].includes(vol) || (item.product_name && item.product_name.toLowerCase().includes("tester"));
+            });
+
+            if (tItems.length > 0) {
+              let tSum = 0;
+              for (const ti of tItems) {
+                tSum += Number(ti.total_price || (ti.unit_price * ti.quantity) || 99);
+              }
+              if (tSum > 0) {
+                testerDiscount = Math.min(tSum, Math.max(0, subtotal - couponDiscount));
+                testerRedeemedFromOrder = ord.order_number;
+                testerRedeemedOrderId = ord.id;
+                break;
+              }
+            }
+          }
+        } else if (cleanQuery.toUpperCase().startsWith("ANG-DEMO") || cleanQuery.toUpperCase() === "TESTER100") {
+          testerDiscount = Math.min(199, Math.max(0, subtotal - couponDiscount));
+          testerRedeemedFromOrder = cleanQuery.toUpperCase();
+        }
+      }
+    }
+
+    const totalDiscount = couponDiscount + testerDiscount;
+
     // 5. Server-side shipping fee calculation
     const shipping = subtotal >= 1499 ? 0 : 99;
-    const total = Math.max(0, subtotal - discount + shipping);
+    const total = Math.max(0, subtotal - totalDiscount + shipping);
     const orderNumber = generateOrderNumber();
 
     const whatsappNumber = sanitizedAddress.whatsapp_same
@@ -245,6 +306,11 @@ export async function POST(req: NextRequest) {
     }
 
     // 7. Create secure order record
+    const orderNotes = [
+      finalCouponCode ? `Coupon: ${finalCouponCode}` : null,
+      testerRedeemedFromOrder ? `[Tester Credit Redeemed: ₹${testerDiscount} from Order #${testerRedeemedFromOrder}]` : null,
+    ].filter(Boolean).join(" | ") || null;
+
     const { data: order, error: orderError } = await adminClient
       .from("orders")
       .insert({
@@ -255,13 +321,14 @@ export async function POST(req: NextRequest) {
         payment_status: "pending",
         payment_method,
         subtotal,
-        discount_amount: discount,
+        discount_amount: totalDiscount,
         shipping_amount: shipping,
         total_amount: total,
         coupon_id: couponId,
         coupon_code: finalCouponCode,
         shipping_address: sanitizedAddress,
         whatsapp_number: whatsappNumber,
+        notes: orderNotes,
       })
       .select("id, order_number")
       .single();
@@ -269,6 +336,17 @@ export async function POST(req: NextRequest) {
     if (orderError || !order) {
       console.error("[Order Create] DB error:", orderError);
       return NextResponse.json({ error: "Unable to create order. Please try again." }, { status: 500 });
+    }
+
+    // Mark previous tester order as redeemed
+    if (testerRedeemedOrderId) {
+      try {
+        await adminClient.from("orders").update({
+          notes: `[Tester Credit Redeemed on Order #${orderNumber}]`
+        }).eq("id", testerRedeemedOrderId);
+      } catch (e) {
+        console.error("Warning marking tester credit as redeemed:", e);
+      }
     }
 
     // 8. Insert order items

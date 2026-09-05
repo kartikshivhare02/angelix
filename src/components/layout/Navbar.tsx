@@ -98,37 +98,25 @@ export function Navbar() {
               textDecoration: "none",
               textAlign: "center",
               display: "flex",
-              flexDirection: "column",
               alignItems: "center",
+              justifyContent: "center",
               lineHeight: 1,
               userSelect: "none",
+              padding: "4px 0",
             }}
           >
-            <span
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo.png"
+              alt="ANGELIX - BY SURAJ"
               style={{
-                fontFamily: "var(--font-serif)",
-                fontSize: "clamp(1.1rem, 3vw, 1.35rem)",
-                fontWeight: 600,
-                letterSpacing: "0.22em",
-                color: "var(--color-text)",
-                lineHeight: 1,
-                textTransform: "uppercase",
+                height: "clamp(34px, 4.5vw, 44px)",
+                width: "auto",
+                objectFit: "contain",
+                display: "block",
+                filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.08))",
               }}
-            >
-              ANGLELIX
-            </span>
-            <span
-              style={{
-                fontFamily: "var(--font-sans)",
-                fontSize: "0.58rem",
-                letterSpacing: "0.18em",
-                color: "var(--color-text-muted)",
-                marginTop: "3px",
-                textTransform: "lowercase",
-              }}
-            >
-              by Suraj
-            </span>
+            />
           </Link>
 
           {/* RIGHT — Actions */}

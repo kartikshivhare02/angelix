@@ -77,6 +77,13 @@ export default function CheckoutPage() {
   const [couponApplied, setCouponApplied] = useState("");
   const [couponLoading, setCouponLoading] = useState(false);
 
+  // Tester Credit State (100% Value Settle Guarantee)
+  const [testerCreditQuery, setTesterCreditQuery] = useState("");
+  const [testerDiscount, setTesterDiscount] = useState(0);
+  const [testerAppliedOrder, setTesterAppliedOrder] = useState("");
+  const [testerLoading, setTesterLoading] = useState(false);
+  const [testerMessage, setTesterMessage] = useState("");
+
   // Placing State
   const [placing, setPlacing] = useState(false);
 
@@ -93,10 +100,33 @@ export default function CheckoutPage() {
           last_name: user.user_metadata?.last_name || prev.last_name,
           phone: user.user_metadata?.phone || prev.phone,
         }));
+
+        // Automatically pre-check for any previous tester purchases by email
+        if (user.email) {
+          fetch("/api/testers/validate-credit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              query: user.email,
+              cart_items: items,
+              subtotal: totalPrice(),
+            }),
+          })
+            .then((r) => r.json())
+            .then((res) => {
+              if (res.valid && res.credit_amount > 0) {
+                setTesterDiscount(res.credit_amount);
+                setTesterAppliedOrder(res.order_number || user.email || "");
+                setTesterMessage(res.message);
+                toast.success(`🎉 Previous Tester Settle Detected: -${formatPrice(res.credit_amount)}`);
+              }
+            })
+            .catch(() => {});
+        }
       }
       setAuthChecking(false);
     });
-  }, []);
+  }, [items]);
 
   // 2. Indian Postal Pincode API Integration
   const handlePincodeChange = async (pin: string) => {
@@ -139,7 +169,7 @@ export default function CheckoutPage() {
 
   const subtotal = totalPrice();
   const shipping = subtotal >= 1499 ? 0 : 99;
-  const total = Math.max(0, subtotal - discount + shipping);
+  const total = Math.max(0, subtotal - discount - testerDiscount + shipping);
 
   const applyCoupon = async () => {
     if (!coupon.trim()) return;
@@ -163,6 +193,46 @@ export default function CheckoutPage() {
     } finally {
       setCouponLoading(false);
     }
+  };
+
+  const applyTesterCredit = async (queryVal?: string) => {
+    const q = (queryVal || testerCreditQuery).trim();
+    if (!q) {
+      toast.error("Please enter your Tester Order Number, Email, or Phone.");
+      return;
+    }
+    setTesterLoading(true);
+    try {
+      const res = await fetch("/api/testers/validate-credit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: q,
+          cart_items: items,
+          subtotal,
+        }),
+      });
+      const data = await res.json();
+      if (data.error) {
+        toast.error(data.error);
+        return;
+      }
+      setTesterDiscount(data.credit_amount);
+      setTesterAppliedOrder(data.order_number || q);
+      setTesterMessage(data.message || `₹${data.credit_amount} Tester Value Settle Applied`);
+      toast.success(`🎉 Tester Credit Applied: -${formatPrice(data.credit_amount)}`);
+    } catch {
+      toast.error("Unable to validate tester credit.");
+    } finally {
+      setTesterLoading(false);
+    }
+  };
+
+  const removeTesterCredit = () => {
+    setTesterDiscount(0);
+    setTesterAppliedOrder("");
+    setTesterMessage("");
+    toast.info("Tester credit removed.");
   };
 
   // Step 1 Validation
@@ -229,6 +299,7 @@ export default function CheckoutPage() {
           items: items.map((i) => ({ product_id: i.product_id, quantity: i.quantity, volume_ml: i.volume_ml })),
           shipping_address: form,
           coupon_code: couponApplied || undefined,
+          tester_credit_query: testerAppliedOrder || undefined,
           payment_method: paymentMethod,
         }),
       });
@@ -258,7 +329,7 @@ export default function CheckoutPage() {
           key: data.razorpay_key || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
           amount: data.amount,
           currency: "INR",
-          name: "ANGLELIX by Suraj",
+          name: "ANGELIX by Suraj",
           description: `Order #${data.order_number}`,
           order_id: data.razorpay_order_id,
           prefill: {
@@ -410,7 +481,7 @@ export default function CheckoutPage() {
             </div>
 
             {/* Coupon input */}
-            <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
+            <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.75rem" }}>
               <input
                 type="text"
                 placeholder="Discount code"
@@ -429,6 +500,43 @@ export default function CheckoutPage() {
               </button>
             </div>
 
+            {/* Tester 100% Value Settlement Card */}
+            <div style={{ background: "#fbf8f2", border: "1px solid #ebdcc5", padding: "0.75rem", borderRadius: "2px", marginBottom: "1rem" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.4rem" }}>
+                <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.72rem", fontWeight: 700, color: "#8a6d3b", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                  🧪 100% Tester Value Settle
+                </span>
+                {testerDiscount > 0 && (
+                  <button type="button" onClick={removeTesterCredit} style={{ background: "none", border: "none", color: "#c0392b", fontSize: "0.68rem", cursor: "pointer" }}>
+                    Remove
+                  </button>
+                )}
+              </div>
+              {testerDiscount > 0 ? (
+                <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.75rem", color: "#27ae60", fontWeight: 600 }}>
+                  ✓ {testerMessage || `Tester value of ${formatPrice(testerDiscount)} deducted!`}
+                </p>
+              ) : (
+                <div style={{ display: "flex", gap: "0.4rem" }}>
+                  <input
+                    type="text"
+                    placeholder="Tester Order # / Phone / Email"
+                    value={testerCreditQuery}
+                    onChange={(e) => setTesterCreditQuery(e.target.value)}
+                    style={{ flex: 1, padding: "0.45rem 0.6rem", border: "1px solid #ebdcc5", fontSize: "0.75rem", background: "#fff" }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => applyTesterCredit()}
+                    disabled={testerLoading}
+                    style={{ padding: "0.45rem 0.75rem", background: "#8a6d3b", color: "#fff", border: "none", fontSize: "0.72rem", fontWeight: 600, cursor: "pointer" }}
+                  >
+                    {testerLoading ? "..." : "Redeem"}
+                  </button>
+                </div>
+              )}
+            </div>
+
             {/* Price lines */}
             <div style={{ borderTop: "1px solid #eee", paddingTop: "0.75rem", display: "flex", flexDirection: "column", gap: "0.4rem", fontSize: "0.82rem" }}>
               <div style={{ display: "flex", justifyContent: "space-between", color: "#666" }}>
@@ -439,6 +547,12 @@ export default function CheckoutPage() {
                 <div style={{ display: "flex", justifyContent: "space-between", color: "#27ae60", fontWeight: 600 }}>
                   <span>Discount ({couponApplied})</span>
                   <span>-{formatPrice(discount)}</span>
+                </div>
+              )}
+              {testerDiscount > 0 && (
+                <div style={{ display: "flex", justifyContent: "space-between", color: "#8a6d3b", fontWeight: 700 }}>
+                  <span>Tester Settle ({testerAppliedOrder})</span>
+                  <span>-{formatPrice(testerDiscount)}</span>
                 </div>
               )}
               <div style={{ display: "flex", justifyContent: "space-between", color: "#666" }}>
@@ -982,7 +1096,7 @@ export default function CheckoutPage() {
             </div>
 
             {/* Coupon Box */}
-            <div style={{ marginBottom: "1.25rem", borderTop: "1px solid #f0f0f0", paddingTop: "1rem" }}>
+            <div style={{ marginBottom: "0.85rem", borderTop: "1px solid #f0f0f0", paddingTop: "0.85rem" }}>
               <div style={{ display: "flex", gap: "0.4rem" }}>
                 <input
                   type="text"
@@ -1024,6 +1138,63 @@ export default function CheckoutPage() {
               )}
             </div>
 
+            {/* Tester 100% Value Settle Card */}
+            <div style={{ background: "#fbf8f2", border: "1px solid #ebdcc5", padding: "0.85rem", borderRadius: "2px", marginBottom: "1rem" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.35rem" }}>
+                <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.72rem", fontWeight: 700, color: "#8a6d3b", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                  🧪 100% Tester Value Settle
+                </span>
+                {testerDiscount > 0 && (
+                  <button type="button" onClick={removeTesterCredit} style={{ background: "none", border: "none", color: "#c0392b", fontSize: "0.68rem", cursor: "pointer" }}>
+                    Remove
+                  </button>
+                )}
+              </div>
+              {testerDiscount > 0 ? (
+                <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.75rem", color: "#27ae60", fontWeight: 600 }}>
+                  ✓ {testerMessage || `Tester value of ${formatPrice(testerDiscount)} deducted!`}
+                </p>
+              ) : (
+                <>
+                  <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.7rem", color: "#8a6d3b", marginBottom: "0.4rem", lineHeight: 1.4 }}>
+                    Bought a tester earlier? Enter your tester order # or email to deduct 100% of the cost.
+                  </p>
+                  <div style={{ display: "flex", gap: "0.35rem" }}>
+                    <input
+                      type="text"
+                      placeholder="ANG-2026-XXXXXX / Email"
+                      value={testerCreditQuery}
+                      onChange={(e) => setTesterCreditQuery(e.target.value)}
+                      style={{
+                        flex: 1,
+                        padding: "0.45rem 0.6rem",
+                        border: "1px solid #ebdcc5",
+                        fontSize: "0.75rem",
+                        background: "#fff",
+                        outline: "none",
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => applyTesterCredit()}
+                      disabled={testerLoading}
+                      style={{
+                        padding: "0.45rem 0.75rem",
+                        background: "#8a6d3b",
+                        color: "#fff",
+                        border: "none",
+                        fontSize: "0.72rem",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {testerLoading ? "..." : "Settle"}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+
             {/* Price lines */}
             <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", borderTop: "1px solid #f0f0f0", paddingTop: "0.85rem" }}>
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.82rem", color: "#666" }}>
@@ -1034,6 +1205,12 @@ export default function CheckoutPage() {
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.82rem", color: "#166534", fontWeight: 600 }}>
                   <span>Discount</span>
                   <span>-{formatPrice(discount)}</span>
+                </div>
+              )}
+              {testerDiscount > 0 && (
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.82rem", color: "#8a6d3b", fontWeight: 700 }}>
+                  <span>Tester Settle ({testerAppliedOrder})</span>
+                  <span>-{formatPrice(testerDiscount)}</span>
                 </div>
               )}
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.82rem", color: "#666" }}>

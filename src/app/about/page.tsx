@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "About — ANGLELIX by Suraj",
-  description: "Discover the story of ANGLELIX — a fragrance house built on the philosophy that scent is identity. Premium perfumes crafted with intention.",
+  title: "About — ANGELIX by Suraj",
+  description: "Discover the story of ANGELIX — a fragrance house built on the philosophy that scent is identity. Premium perfumes crafted with intention.",
 };
 
 const PILLARS = [
   {
     title: "Our Philosophy",
-    body: "We believe fragrance is more than a product — it is an extension of identity. Every ANGLELIX scent is designed to leave an impression that lingers long after you have left the room.",
+    body: "We believe fragrance is more than a product — it is an extension of identity. Every ANGELIX scent is designed to leave an impression that lingers long after you have left the room.",
   },
   {
     title: "Our Approach",
@@ -17,11 +17,11 @@ const PILLARS = [
   },
   {
     title: "Craftsmanship",
-    body: "Fragrance formulation at ANGLELIX is a deliberate, patient process. We layer notes with intention — opening with intrigue, evolving through depth, and settling into a signature that stays.",
+    body: "Fragrance formulation at ANGELIX is a deliberate, patient process. We layer notes with intention — opening with intrigue, evolving through depth, and settling into a signature that stays.",
   },
   {
     title: "Quality",
-    body: "From ingredient selection to bottle design, we apply the same rigorous standard at every step. ANGLELIX fragrances are concentrated, long-lasting, and built to perform from morning through night.",
+    body: "From ingredient selection to bottle design, we apply the same rigorous standard at every step. ANGELIX fragrances are concentrated, long-lasting, and built to perform from morning through night.",
   },
 ];
 
@@ -39,7 +39,7 @@ export default function AboutPage() {
       >
         <div className="container-site">
           <p className="label-caps animate-fade-up" style={{ color: "var(--color-text-muted)", marginBottom: "1rem" }}>
-            Know Anglelix
+            Know Angelix
           </p>
           <h1
             className="heading-editorial animate-fade-up delay-100"
@@ -58,7 +58,7 @@ export default function AboutPage() {
               lineHeight: 1.8,
             }}
           >
-            ANGLELIX by Suraj is a fragrance house born from a singular belief — that the right scent defines who you are before you speak.
+            ANGELIX by Suraj is a fragrance house born from a singular belief — that the right scent defines who you are before you speak.
           </p>
         </div>
       </section>
@@ -66,7 +66,7 @@ export default function AboutPage() {
       {/* Brand name section */}
       <section style={{ padding: "6rem 0", borderBottom: "1px solid var(--color-border)" }}>
         <div className="container-site">
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4rem", alignItems: "center" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4rem", alignItems: "center" }} className="about-two-col">
             <div>
               <p className="label-caps" style={{ color: "var(--color-text-muted)", marginBottom: "1.5rem" }}>
                 The Brand
@@ -75,32 +75,39 @@ export default function AboutPage() {
                 className="heading-editorial"
                 style={{ fontSize: "clamp(2.5rem, 5vw, 4rem)", marginBottom: "2rem", lineHeight: 1.1 }}
               >
-                ANGLELIX<br />
+                ANGELIX<br />
                 <span style={{ fontWeight: 300, fontSize: "0.6em", color: "var(--color-text-muted)" }}>by Suraj</span>
               </h2>
               <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.92rem", color: "var(--color-text-muted)", lineHeight: 1.85, maxWidth: "480px" }}>
-                ANGLELIX was founded on the conviction that premium fragrance should not be a privilege reserved for the few.
+                ANGELIX was founded on the conviction that premium fragrance should not be a privilege reserved for the few.
                 We create perfumes that are accessible in reach but uncompromising in quality — offering the same olfactive
                 experience as the world&apos;s finest fragrance houses.
               </p>
             </div>
             <div
               style={{
-                background: "var(--color-cream)",
-                border: "1px solid var(--color-border)",
+                background: "linear-gradient(135deg, #181818 0%, #0a0a0a 100%)",
+                border: "1px solid rgba(255,255,255,0.1)",
                 aspectRatio: "4/5",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                boxShadow: "0 20px 40px rgba(0,0,0,0.15)",
+                padding: "2rem",
               }}
             >
-              <div style={{ textAlign: "center", padding: "3rem" }}>
-                <p style={{ fontFamily: "var(--font-serif)", fontSize: "3rem", fontWeight: 300, letterSpacing: "-0.02em", lineHeight: 1 }}>
-                  ANGLELIX
-                </p>
-                <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.75rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--color-text-muted)", marginTop: "0.75rem" }}>
-                  by Suraj
-                </p>
+              <div style={{ textAlign: "center" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/logo.png"
+                  alt="ANGELIX - BY SURAJ"
+                  style={{
+                    maxHeight: "120px",
+                    maxWidth: "100%",
+                    objectFit: "contain",
+                    filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.5))",
+                  }}
+                />
               </div>
             </div>
           </div>
@@ -108,7 +115,7 @@ export default function AboutPage() {
 
         <style>{`
           @media (max-width: 768px) {
-            .about-two-col { grid-template-columns: 1fr !important; }
+            .about-two-col { grid-template-columns: 1fr !important; gap: 2rem !important; }
           }
         `}</style>
       </section>
@@ -121,11 +128,11 @@ export default function AboutPage() {
               What We Stand For
             </p>
             <h2 className="heading-editorial" style={{ fontSize: "clamp(2rem, 4vw, 3rem)" }}>
-              The ANGLELIX Standard
+              The ANGELIX Standard
             </h2>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1px", background: "var(--color-border)" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1px", background: "var(--color-border)" }} className="about-grid">
             {PILLARS.map((pillar, i) => (
               <div
                 key={i}
@@ -155,20 +162,20 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Why ANGLELIX */}
+      {/* Why ANGELIX */}
       <section style={{ padding: "6rem 0", borderBottom: "1px solid var(--color-border)" }}>
         <div className="container-site" style={{ textAlign: "center", maxWidth: "720px", margin: "0 auto" }}>
           <p className="label-caps" style={{ color: "var(--color-text-muted)", marginBottom: "1rem" }}>
-            Why ANGLELIX
+            Why ANGELIX
           </p>
           <h2 className="heading-editorial" style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", marginBottom: "2rem" }}>
             Your Signature Starts Here
           </h2>
           <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.92rem", color: "var(--color-text-muted)", lineHeight: 1.9, marginBottom: "3rem" }}>
-            Every ANGLELIX fragrance is built around a narrative — a mood, a memory, a feeling.
+            Every ANGELIX fragrance is built around a narrative — a mood, a memory, a feeling.
             We do not create generic crowd-pleasers. We create scents for people who know exactly the impression they want to make.
             Whether you are drawn to the warmth of oud and amber, the clarity of fresh aquatics, or the boldness of leather and spice —
-            there is an ANGLELIX made for you.
+            there is an ANGELIX made for you.
           </p>
 
           <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
@@ -189,7 +196,7 @@ export default function AboutPage() {
             &ldquo;A great fragrance does not announce itself.<br />It reveals itself — slowly, and unforgettably.&rdquo;
           </p>
           <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginTop: "2rem" }}>
-            — ANGLELIX by Suraj
+            — ANGELIX by Suraj
           </p>
         </div>
       </section>

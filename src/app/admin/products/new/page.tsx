@@ -115,7 +115,7 @@ export default function NewProductPage() {
       name,
       slug: prev.slug === "" || prev.slug.endsWith("-100ml") ? slug : prev.slug,
       sku: prev.sku === "" ? sku : prev.sku,
-      seo_title: `${name} — Luxury Fragrance | ANGLELIX`,
+      seo_title: `${name} — Luxury Fragrance | ANGELIX`,
     }));
   };
 
@@ -715,7 +715,7 @@ export default function NewProductPage() {
                 className="input-base"
                 value={form.seo_title}
                 onChange={(e) => set("seo_title", e.target.value)}
-                placeholder="Product Name — Luxury Fragrance | ANGLELIX"
+                placeholder="Product Name — Luxury Fragrance | ANGELIX"
               />
             </div>
             <div>
@@ -725,7 +725,7 @@ export default function NewProductPage() {
                 rows={2}
                 value={form.seo_description}
                 onChange={(e) => set("seo_description", e.target.value)}
-                placeholder="Discover this fragrance by ANGLELIX. Handcrafted luxury perfumery."
+                placeholder="Discover this fragrance by ANGELIX. Handcrafted luxury perfumery."
                 style={{ resize: "vertical" }}
               />
             </div>

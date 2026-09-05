@@ -257,13 +257,19 @@ export function CartDrawer() {
                   gap: "0.75rem",
                 }}
               >
-                {items.some((i) => [2, 5, 10].includes(i.volume_ml)) && (
+                {items.some((i) => [2, 5, 10].includes(i.volume_ml)) ? (
                   <div style={{ padding: "0.6rem 0.75rem", background: "#fdf8ef", border: "1px solid #e8decb", borderRadius: "2px" }}>
                     <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.72rem", color: "#6e5d3d", lineHeight: 1.4 }}>
-                      ✨ <strong>Tester Guarantee:</strong> Upgrade to full 100ml later and your tester value will be settled & credited!
+                      ✨ <strong>100% Tester Value Settle:</strong> When you buy a full bottle later, your entire tester amount is deducted!
                     </p>
                   </div>
-                )}
+                ) : items.some((i) => Number(i.volume_ml) >= 50) ? (
+                  <div style={{ padding: "0.6rem 0.75rem", background: "#fdf8ef", border: "1px solid #e8decb", borderRadius: "2px" }}>
+                    <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.72rem", color: "#6e5d3d", lineHeight: 1.4 }}>
+                      💎 <strong>Previously bought a tester?</strong> Settle &amp; deduct 100% of your tester value at checkout!
+                    </p>
+                  </div>
+                ) : null}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem", color: "var(--color-text-muted)" }}>
                     Subtotal

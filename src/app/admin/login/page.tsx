@@ -125,6 +125,10 @@ function AdminLoginForm() {
           >
             <ShieldCheck size={24} color="#e5e5e5" strokeWidth={1.75} />
           </div>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: "0.75rem" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="ANGELIX" style={{ height: "40px", width: "auto", objectFit: "contain" }} />
+          </div>
           <p
             style={{
               fontSize: "0.7rem",
@@ -146,7 +150,7 @@ function AdminLoginForm() {
               color: "#fff",
             }}
           >
-            ANGLELIX Admin
+            ANGELIX Admin
           </h1>
         </div>
 
@@ -299,7 +303,7 @@ function AdminLoginForm() {
               letterSpacing: "0.05em",
             }}
           >
-            ← Return to ANGLELIX Store
+            ← Return to ANGELIX Store
           </a>
         </div>
       </div>
