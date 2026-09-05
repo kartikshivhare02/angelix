@@ -127,7 +127,7 @@ function AdminLoginForm() {
           </div>
           <div style={{ display: "flex", justifyContent: "center", marginBottom: "0.75rem" }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="ANGELIX" style={{ height: "40px", width: "auto", objectFit: "contain" }} />
+            <img src="/logo.png" alt="ANGELIX" style={{ height: "40px", width: "auto", objectFit: "contain", filter: "brightness(0) invert(1)" }} />
           </div>
           <p
             style={{
