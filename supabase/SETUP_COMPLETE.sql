@@ -225,7 +225,7 @@ create index if not exists idx_orders_number on orders(order_number);
 create table if not exists order_items (
   id uuid primary key default uuid_generate_v4(),
   order_id uuid references orders(id) on delete cascade not null,
-  product_id uuid references products(id) not null,
+  product_id uuid references products(id) on delete set null,
   product_name text not null,
   product_slug text not null,
   image_url text,

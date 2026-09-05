@@ -102,6 +102,9 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   await adminClient.from("product_fragrance_families").delete().eq("product_id", id);
   await adminClient.from("tester_products").delete().eq("product_id", id);
   await adminClient.from("wishlists").delete().eq("product_id", id);
+  
+  // Detach from order history (preserve order items with snapshot data)
+  await adminClient.from("order_items").update({ product_id: null }).eq("product_id", id);
 
   const { error } = await adminClient.from("products").delete().eq("id", id);
   if (error) {
