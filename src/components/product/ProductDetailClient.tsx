@@ -552,10 +552,10 @@ export function ProductDetailClient({ product }: Props) {
               {!isTesterSelected && product.stock_quantity === 0
                 ? "Out of Stock"
                 : addingToCart
-                ? "Added to Bag ✓"
-                : isTesterSelected
-                ? `Add ${selectedSize}ml Tester to Bag — ₹${activePrice * qty}`
-                : "Add to Bag"}
+                  ? "Added to Bag ✓"
+                  : isTesterSelected
+                    ? `Add ${selectedSize}ml Tester to Bag — ₹${activePrice * qty}`
+                    : "Add to Bag"}
             </button>
             {(!isTesterSelected ? product.stock_quantity > 0 : true) && (
               <button

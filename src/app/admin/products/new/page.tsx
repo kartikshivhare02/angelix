@@ -8,6 +8,8 @@ import { ArrowLeft, Save, Sparkles, Eye } from "lucide-react";
 import { isSolidProduct } from "@/lib/utils";
 import { ImageUploadPicker } from "@/components/admin/ImageUploadPicker";
 import { ProductGalleryManager } from "@/components/admin/ProductGalleryManager";
+import { VariantsManager } from "@/components/admin/VariantsManager";
+import { ProductVariant } from "@/lib/types";
 
 interface Category {
   id: string;
@@ -84,6 +86,7 @@ export default function NewProductPage() {
     is_bestseller: false,
     is_new_arrival: true,
     tester_available: true,
+    variants: [] as ProductVariant[],
     seo_title: "",
     seo_description: "",
   });
@@ -176,6 +179,7 @@ export default function NewProductPage() {
         is_bestseller: form.is_bestseller,
         is_new_arrival: form.is_new_arrival,
         tester_available: form.tester_available,
+        variants: form.variants,
         seo_title: form.seo_title.trim() || null,
         seo_description: form.seo_description.trim() || null,
       };
@@ -438,6 +442,20 @@ export default function NewProductPage() {
                 onChange={(e) => set("low_stock_threshold", e.target.value)}
               />
             </div>
+          </div>
+
+          <div style={{ marginTop: "1.75rem", paddingTop: "1.5rem", borderTop: "1px solid #eee" }}>
+            <VariantsManager
+              variants={form.variants}
+              onChange={(vars) => set("variants", vars)}
+              baseVolume={Number(form.volume_ml) || 100}
+              basePrice={Number(form.original_price) || 3499}
+              isSolid={isSolidProduct({
+                category: categories.find((c) => c.id === form.category_id)?.name,
+                concentration: form.concentration,
+                name: form.name,
+              })}
+            />
           </div>
         </section>
 

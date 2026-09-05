@@ -79,9 +79,9 @@ export default function EditProductPage() {
             main_image_url: p.main_image_url ?? "",
             gallery_images: Array.isArray(p.images)
               ? p.images
-                  .sort((a: any, b: any) => (a.display_order ?? 0) - (b.display_order ?? 0))
-                  .map((i: any) => i.image_url)
-                  .filter((u: string) => u && u !== p.main_image_url)
+                .sort((a: any, b: any) => (a.display_order ?? 0) - (b.display_order ?? 0))
+                .map((i: any) => i.image_url)
+                .filter((u: string) => u && u !== p.main_image_url)
               : [],
             short_description: p.short_description ?? "",
             full_description: p.full_description ?? "",

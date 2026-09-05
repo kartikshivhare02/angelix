@@ -9,7 +9,12 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
   const adminClient = await createAdminClient();
   const { id } = await params;
-  const { data, error } = await adminClient.from("products").select("*, images:product_images(*)").eq("id", id).single();
+  const { data, error } = await adminClient
+    .from("products")
+    .select("*, images:product_images(*), variants:product_variants(*)")
+    .eq("id", id)
+    .single();
+
   if (error) return NextResponse.json({ error: error.message }, { status: 404 });
   return NextResponse.json({ product: data });
 }
@@ -21,7 +26,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const adminClient = await createAdminClient();
   const { id } = await params;
   const body = await req.json();
-  const { gallery_images, images, ...productData } = body;
+  const { gallery_images, images, variants, ...productData } = body;
 
   const { data, error } = await adminClient
     .from("products")
@@ -39,10 +44,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       ? rawImages.map((i: any) => (typeof i === "string" ? i : i?.image_url)).filter(Boolean)
       : [];
 
-    // Delete existing product images
     await adminClient.from("product_images").delete().eq("product_id", id);
 
-    // Insert new product images in order
     if (imagesToInsert.length > 0) {
       const rows = imagesToInsert.map((url, idx) => ({
         product_id: id,
@@ -50,6 +53,26 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         display_order: idx + 1,
       }));
       await adminClient.from("product_images").insert(rows);
+    }
+  }
+
+  // If variants was provided, sync product_variants
+  if (variants !== undefined && Array.isArray(variants)) {
+    await adminClient.from("product_variants").delete().eq("product_id", id);
+
+    if (variants.length > 0) {
+      const variantRows = variants.map((v: any, idx: number) => ({
+        product_id: id,
+        name: v.name || `${v.volume_ml || 100}ml`,
+        volume_ml: v.volume_ml ? Number(v.volume_ml) : null,
+        sku: v.sku || `${data.sku}-${v.volume_ml || idx + 1}`,
+        original_price: Number(v.original_price) || Number(productData.original_price || data.original_price),
+        sale_price: v.sale_price ? Number(v.sale_price) : null,
+        stock_quantity: Number(v.stock_quantity ?? 0),
+        is_default: Boolean(v.is_default),
+        display_order: idx + 1,
+      }));
+      await adminClient.from("product_variants").insert(variantRows);
     }
   }
 
@@ -75,6 +98,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
 
   // Clean up dependent child rows
   await adminClient.from("product_images").delete().eq("product_id", id);
+  await adminClient.from("product_variants").delete().eq("product_id", id);
   await adminClient.from("product_fragrance_families").delete().eq("product_id", id);
   await adminClient.from("tester_products").delete().eq("product_id", id);
   await adminClient.from("wishlists").delete().eq("product_id", id);

@@ -43,7 +43,36 @@ export interface Product {
   // Relations
   category?: Category;
   images?: ProductImage[];
+  variants?: ProductVariant[];
   fragrance_families?: FragranceFamily[];
+}
+
+export interface ProductVariant {
+  id?: string;
+  product_id?: string;
+  name: string; // e.g. "50ml", "100ml", "200ml", "30g"
+  volume_ml?: number | null;
+  sku?: string | null;
+  original_price: number;
+  sale_price?: number | null;
+  stock_quantity: number;
+  is_default?: boolean;
+  display_order?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CartItem {
+  product_id: string;
+  variant_id?: string | null;
+  name: string;
+  slug: string;
+  image_url: string;
+  price: number;
+  original_price: number;
+  volume_ml: number;
+  concentration: string;
+  quantity: number;
 }
 
 export interface ProductImage {
@@ -100,18 +129,6 @@ export interface Address {
   pin_code: string;
   country: string;
   is_default: boolean;
-}
-
-export interface CartItem {
-  product_id: string;
-  name: string;
-  slug: string;
-  image_url: string;
-  price: number;
-  original_price: number;
-  volume_ml: number;
-  concentration: string;
-  quantity: number;
 }
 
 export interface Order {

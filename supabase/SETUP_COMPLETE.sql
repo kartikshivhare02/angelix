@@ -130,6 +130,23 @@ create table if not exists product_images (
 );
 create index if not exists idx_product_images_product on product_images(product_id);
 
+-- ── Product Variants (Multi-Size, Capacity & Prices) ───────
+create table if not exists product_variants (
+  id uuid primary key default uuid_generate_v4(),
+  product_id uuid references products(id) on delete cascade not null,
+  name text not null,
+  volume_ml int,
+  sku text,
+  original_price numeric(10,2) not null,
+  sale_price numeric(10,2),
+  stock_quantity int not null default 0,
+  is_default boolean default false,
+  display_order int default 0,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+create index if not exists idx_product_variants_product on product_variants(product_id);
+
 -- ── Product Fragrance Families ─────────────────────────────
 create table if not exists product_fragrance_families (
   product_id uuid references products(id) on delete cascade,
@@ -448,6 +465,7 @@ create policy "admins_select_own" on admins for select using (auth.uid() = user_
 
 -- Public read policies (storefront)
 create policy "products_public_read" on products for select using (is_published = true);
+create policy "product_variants_public_read" on product_variants for select using (true);
 create policy "categories_public_read" on categories for select using (is_active = true);
 create policy "fragrance_families_public_read" on fragrance_families for select using (true);
 create policy "banners_public_read" on banners for select using (is_active = true);
