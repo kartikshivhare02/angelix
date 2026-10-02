@@ -1,10 +1,17 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { AppShell } from "@/components/layout/AppShell";
 import { CartProvider } from "@/components/providers/CartProvider";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://angelix.com";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#111111",
+};
 
 export const metadata: Metadata = {
   title: {

@@ -197,11 +197,18 @@ body {
   border: 1px solid var(--color-border);
   background: var(--color-bg);
   font-family: var(--font-sans);
-  font-size: 0.9rem;
+  font-size: 1rem; /* 16px prevents iOS Safari forced zoom on input focus */
   color: var(--color-text);
   outline: none;
   transition: border-color 0.2s;
   border-radius: 0;
+  -webkit-appearance: none;
+}
+
+@media (min-width: 768px) {
+  .input-base {
+    font-size: 0.9rem;
+  }
 }
 
 .input-base:focus {
