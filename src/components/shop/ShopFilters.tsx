@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { SlidersHorizontal, X } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { SlidersHorizontal, ChevronDown, X, RotateCcw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -26,8 +26,9 @@ interface Props {
 }
 
 export function ShopFilters({ active, totalCount }: Props) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [categories, setCategories] = useState<{ id: string; name: string; slug: string }[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -37,6 +38,17 @@ export function ShopFilters({ active, totalCount }: Props) {
         if (d.categories) setCategories(d.categories);
       })
       .catch(() => {});
+  }, []);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const setFilter = (key: string, value: string) => {
@@ -51,124 +63,185 @@ export function ShopFilters({ active, totalCount }: Props) {
 
   const clearAll = () => {
     router.push("/shop");
-    setIsOpen(false);
+    setDropdownOpen(false);
   };
 
-  const activeCount = [active.gender, active.category, active.family].filter(Boolean).length;
+  const activeCount = [active.gender, active.category, active.family, active.sort].filter(Boolean).length;
 
   return (
-    <>
-      {/* Trigger bar */}
+    <div ref={containerRef} style={{ position: "relative", marginBottom: "2rem" }}>
+      {/* ── Toolbar Row ── */}
       <div
         style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          marginBottom: "1.5rem",
+          flexWrap: "wrap",
+          gap: "1rem",
           paddingBottom: "1rem",
           borderBottom: "1px solid var(--color-border)",
         }}
       >
+        {/* Single Filter & Sort Dropdown Button */}
         <button
-          onClick={() => setIsOpen(true)}
+          type="button"
+          onClick={() => setDropdownOpen((prev) => !prev)}
           style={{
-            display: "flex",
+            display: "inline-flex",
             alignItems: "center",
-            gap: "0.5rem",
-            background: "transparent",
+            gap: "0.6rem",
+            background: dropdownOpen ? "#111111" : "var(--color-bg)",
+            color: dropdownOpen ? "#ffffff" : "var(--color-text)",
             border: "1px solid var(--color-border)",
-            padding: "0.5rem 1rem",
+            padding: "0.6rem 1.15rem",
             fontFamily: "var(--font-sans)",
-            fontSize: "0.8rem",
-            letterSpacing: "0.06em",
+            fontSize: "0.82rem",
+            fontWeight: 600,
+            letterSpacing: "0.05em",
             cursor: "pointer",
-            transition: "border-color 0.2s",
+            transition: "all 0.2s ease",
+            borderRadius: "4px",
+            boxShadow: dropdownOpen ? "0 4px 12px rgba(0,0,0,0.1)" : "0 1px 3px rgba(0,0,0,0.03)",
           }}
-          className="hover:border-black"
         >
-          <SlidersHorizontal size={14} strokeWidth={1.5} />
-          <span>Filters</span>
+          <SlidersHorizontal size={15} strokeWidth={1.5} />
+          <span>Filter & Sort</span>
           {activeCount > 0 && (
             <span
               style={{
-                background: "var(--color-text)",
-                color: "var(--color-white)",
+                background: dropdownOpen ? "#ffffff" : "var(--color-text)",
+                color: dropdownOpen ? "#111111" : "var(--color-white)",
                 borderRadius: "50%",
                 width: "18px",
                 height: "18px",
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: "0.65rem",
+                fontSize: "0.68rem",
                 fontWeight: 700,
               }}
             >
               {activeCount}
             </span>
           )}
+          <ChevronDown
+            size={15}
+            style={{
+              transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
+              transition: "transform 0.2s ease",
+            }}
+          />
         </button>
 
-        {/* Active filter chips inline */}
-        <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap", flex: 1, margin: "0 1rem" }}>
-          {active.gender && (
-            <span
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.3rem",
-                padding: "0.25rem 0.6rem",
-                background: "var(--color-bg-soft)",
-                border: "1px solid var(--color-border)",
-                fontSize: "0.75rem",
-                fontFamily: "var(--font-sans)",
-              }}
-            >
-              {active.gender}
-              <button onClick={() => setFilter("gender", active.gender!)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}>
-                <X size={12} />
-              </button>
-            </span>
-          )}
+        {/* Active Filter Badges */}
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "center", flex: 1 }}>
           {active.category && (
             <span
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: "0.3rem",
-                padding: "0.25rem 0.6rem",
+                gap: "0.35rem",
+                padding: "0.3rem 0.7rem",
                 background: "var(--color-bg-soft)",
                 border: "1px solid var(--color-border)",
                 fontSize: "0.75rem",
                 fontFamily: "var(--font-sans)",
+                borderRadius: "30px",
+                fontWeight: 500,
               }}
             >
-              {active.category}
-              <button onClick={() => setFilter("category", active.category!)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}>
+              Category: {active.category}
+              <button
+                type="button"
+                onClick={() => setFilter("category", active.category!)}
+                style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}
+              >
                 <X size={12} />
               </button>
             </span>
           )}
+
+          {active.gender && (
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.35rem",
+                padding: "0.3rem 0.7rem",
+                background: "var(--color-bg-soft)",
+                border: "1px solid var(--color-border)",
+                fontSize: "0.75rem",
+                fontFamily: "var(--font-sans)",
+                borderRadius: "30px",
+                fontWeight: 500,
+              }}
+            >
+              Gender: {active.gender}
+              <button
+                type="button"
+                onClick={() => setFilter("gender", active.gender!)}
+                style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}
+              >
+                <X size={12} />
+              </button>
+            </span>
+          )}
+
           {active.family && (
             <span
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: "0.3rem",
-                padding: "0.25rem 0.6rem",
+                gap: "0.35rem",
+                padding: "0.3rem 0.7rem",
                 background: "var(--color-bg-soft)",
                 border: "1px solid var(--color-border)",
                 fontSize: "0.75rem",
                 fontFamily: "var(--font-sans)",
+                borderRadius: "30px",
+                fontWeight: 500,
               }}
             >
-              {active.family}
-              <button onClick={() => setFilter("family", active.family!)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}>
+              Family: {active.family}
+              <button
+                type="button"
+                onClick={() => setFilter("family", active.family!)}
+                style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}
+              >
                 <X size={12} />
               </button>
             </span>
           )}
+
+          {active.sort && (
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.35rem",
+                padding: "0.3rem 0.7rem",
+                background: "var(--color-bg-soft)",
+                border: "1px solid var(--color-border)",
+                fontSize: "0.75rem",
+                fontFamily: "var(--font-sans)",
+                borderRadius: "30px",
+                fontWeight: 500,
+              }}
+            >
+              Sort: {SORTS.find((s) => s.value === active.sort)?.label || active.sort}
+              <button
+                type="button"
+                onClick={() => setFilter("sort", active.sort!)}
+                style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}
+              >
+                <X size={12} />
+              </button>
+            </span>
+          )}
+
           {activeCount > 0 && (
             <button
+              type="button"
               onClick={clearAll}
               style={{
                 background: "none",
@@ -178,193 +251,280 @@ export function ShopFilters({ active, totalCount }: Props) {
                 color: "var(--color-text-muted)",
                 cursor: "pointer",
                 textDecoration: "underline",
-                padding: "0.25rem 0.4rem",
+                padding: "0.2rem 0.5rem",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.25rem",
               }}
             >
-              Clear all
+              <RotateCcw size={12} />
+              Reset All
             </button>
           )}
         </div>
 
-        {/* Sort */}
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.78rem", color: "var(--color-text-muted)" }}>
-            Sort:
+        {/* Total Item Count */}
+        {typeof totalCount === "number" && (
+          <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.78rem", color: "var(--color-text-muted)", letterSpacing: "0.04em" }}>
+            {totalCount} {totalCount === 1 ? "Product" : "Products"}
           </span>
-          <select
-            value={active.sort ?? ""}
-            onChange={(e) => setFilter("sort", e.target.value)}
-            style={{
-              fontFamily: "var(--font-sans)",
-              fontSize: "0.78rem",
-              border: "1px solid var(--color-border)",
-              background: "var(--color-bg)",
-              padding: "0.45rem 0.75rem",
-              cursor: "pointer",
-              outline: "none",
-            }}
-          >
-            {SORTS.map((s) => (
-              <option key={s.value} value={s.value}>
-                {s.label}
-              </option>
-            ))}
-          </select>
-        </div>
+        )}
       </div>
 
-      {/* Filter Drawer */}
+      {/* ── Single Unified Dropdown Menu Panel ── */}
       <AnimatePresence>
-        {isOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              key="filter-backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              onClick={() => setIsOpen(false)}
-              style={{
-                position: "fixed",
-                inset: 0,
-                zIndex: 90,
-                background: "rgba(0,0,0,0.35)",
-              }}
-            />
+        {dropdownOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, scale: 0.99 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, scale: 0.99 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+            style={{
+              position: "absolute",
+              top: "calc(100% + 8px)",
+              left: 0,
+              zIndex: 40,
+              width: "100%",
+              maxWidth: "680px",
+              background: "#ffffff",
+              border: "1px solid var(--color-border)",
+              borderRadius: "8px",
+              boxShadow: "0 10px 30px rgba(0, 0, 0, 0.12)",
+              padding: "1.5rem",
+            }}
+          >
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "1.5rem" }}>
+              {/* Category Filter */}
+              <div>
+                <h4
+                  style={{
+                    fontFamily: "var(--font-sans)",
+                    fontSize: "0.72rem",
+                    fontWeight: 700,
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    color: "var(--color-text-muted)",
+                    marginBottom: "0.75rem",
+                  }}
+                >
+                  Category
+                </h4>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                  {categories.map((c) => {
+                    const isSelected = active.category === c.slug || active.category === c.id;
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => setFilter("category", c.slug)}
+                        style={{
+                          textAlign: "left",
+                          background: isSelected ? "var(--color-bg-soft)" : "transparent",
+                          color: isSelected ? "#111" : "var(--color-text-muted)",
+                          border: isSelected ? "1px solid #111" : "1px solid transparent",
+                          padding: "0.4rem 0.6rem",
+                          borderRadius: "4px",
+                          fontFamily: "var(--font-sans)",
+                          fontSize: "0.8rem",
+                          fontWeight: isSelected ? 600 : 400,
+                          cursor: "pointer",
+                          transition: "all 0.15s ease",
+                        }}
+                      >
+                        {c.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
-            {/* Drawer */}
-            <motion.div
-              key="filter-drawer"
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+              {/* Gender Filter */}
+              <div>
+                <h4
+                  style={{
+                    fontFamily: "var(--font-sans)",
+                    fontSize: "0.72rem",
+                    fontWeight: 700,
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    color: "var(--color-text-muted)",
+                    marginBottom: "0.75rem",
+                  }}
+                >
+                  Gender
+                </h4>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                  {GENDERS.map((g) => {
+                    const isSelected = active.gender === g;
+                    return (
+                      <button
+                        key={g}
+                        type="button"
+                        onClick={() => setFilter("gender", g)}
+                        style={{
+                          textAlign: "left",
+                          background: isSelected ? "var(--color-bg-soft)" : "transparent",
+                          color: isSelected ? "#111" : "var(--color-text-muted)",
+                          border: isSelected ? "1px solid #111" : "1px solid transparent",
+                          padding: "0.4rem 0.6rem",
+                          borderRadius: "4px",
+                          fontFamily: "var(--font-sans)",
+                          fontSize: "0.8rem",
+                          fontWeight: isSelected ? 600 : 400,
+                          cursor: "pointer",
+                          transition: "all 0.15s ease",
+                        }}
+                      >
+                        {g}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Fragrance Family */}
+              <div>
+                <h4
+                  style={{
+                    fontFamily: "var(--font-sans)",
+                    fontSize: "0.72rem",
+                    fontWeight: 700,
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    color: "var(--color-text-muted)",
+                    marginBottom: "0.75rem",
+                  }}
+                >
+                  Fragrance Notes
+                </h4>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem", maxHeight: "160px", overflowY: "auto" }}>
+                  {FAMILIES.map((f) => {
+                    const isSelected = active.family === f;
+                    return (
+                      <button
+                        key={f}
+                        type="button"
+                        onClick={() => setFilter("family", f)}
+                        style={{
+                          textAlign: "left",
+                          background: isSelected ? "var(--color-bg-soft)" : "transparent",
+                          color: isSelected ? "#111" : "var(--color-text-muted)",
+                          border: isSelected ? "1px solid #111" : "1px solid transparent",
+                          padding: "0.4rem 0.6rem",
+                          borderRadius: "4px",
+                          fontFamily: "var(--font-sans)",
+                          fontSize: "0.8rem",
+                          fontWeight: isSelected ? 600 : 400,
+                          cursor: "pointer",
+                          transition: "all 0.15s ease",
+                        }}
+                      >
+                        {f}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Sort By */}
+              <div>
+                <h4
+                  style={{
+                    fontFamily: "var(--font-sans)",
+                    fontSize: "0.72rem",
+                    fontWeight: 700,
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    color: "var(--color-text-muted)",
+                    marginBottom: "0.75rem",
+                  }}
+                >
+                  Sort By
+                </h4>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                  {SORTS.map((s) => {
+                    const isSelected = (active.sort ?? "") === s.value;
+                    return (
+                      <button
+                        key={s.value}
+                        type="button"
+                        onClick={() => setFilter("sort", s.value)}
+                        style={{
+                          textAlign: "left",
+                          background: isSelected ? "var(--color-bg-soft)" : "transparent",
+                          color: isSelected ? "#111" : "var(--color-text-muted)",
+                          border: isSelected ? "1px solid #111" : "1px solid transparent",
+                          padding: "0.4rem 0.6rem",
+                          borderRadius: "4px",
+                          fontFamily: "var(--font-sans)",
+                          fontSize: "0.8rem",
+                          fontWeight: isSelected ? 600 : 400,
+                          cursor: "pointer",
+                          transition: "all 0.15s ease",
+                        }}
+                      >
+                        {s.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Dropdown Footer Actions */}
+            <div
               style={{
-                position: "fixed",
-                top: 0,
-                left: 0,
-                bottom: 0,
-                width: "min(340px, 90vw)",
-                background: "var(--color-bg)",
-                zIndex: 91,
                 display: "flex",
-                flexDirection: "column",
-                overflowY: "auto",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginTop: "1.25rem",
+                paddingTop: "1rem",
+                borderTop: "1px solid var(--color-border)",
               }}
             >
-              {/* Header */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "1.5rem",
-                  borderBottom: "1px solid var(--color-border)",
-                  position: "sticky",
-                  top: 0,
-                  background: "var(--color-bg)",
-                  zIndex: 1,
-                }}
-              >
-                <span className="label-caps">Filters</span>
-                <button onClick={() => setIsOpen(false)} className="hover:opacity-50 transition-opacity">
-                  <X size={20} strokeWidth={1.5} />
-                </button>
-              </div>
-
-              {/* Filter Groups */}
-              <div style={{ padding: "1.5rem", flex: 1, display: "flex", flexDirection: "column", gap: "2rem" }}>
-                {/* Dynamic Categories from DB */}
-                {categories.length > 0 && (
-                  <FilterGroup title="Categories">
-                    {categories.map((c) => (
-                      <FilterChip key={c.id} label={c.name} active={active.category === c.slug || active.category === c.id} onClick={() => setFilter("category", c.slug)} />
-                    ))}
-                  </FilterGroup>
-                )}
-
-                <FilterGroup title="Gender">
-                  {GENDERS.map((g) => (
-                    <FilterChip key={g} label={g} active={active.gender === g} onClick={() => setFilter("gender", g)} />
-                  ))}
-                </FilterGroup>
-
-                <FilterGroup title="Fragrance Family">
-                  {FAMILIES.map((f) => (
-                    <FilterChip key={f} label={f} active={active.family === f} onClick={() => setFilter("family", f)} />
-                  ))}
-                </FilterGroup>
-
-                <FilterGroup title="Concentration">
-                  {CONCENTRATIONS.map((c) => (
-                    <FilterChip key={c} label={c} active={active.category === c} onClick={() => setFilter("category", c)} />
-                  ))}
-                </FilterGroup>
-              </div>
-
-              {/* Footer */}
-              <div
-                style={{
-                  padding: "1.5rem",
-                  borderTop: "1px solid var(--color-border)",
-                  display: "flex",
-                  gap: "0.75rem",
-                  position: "sticky",
-                  bottom: 0,
-                  background: "var(--color-bg)",
-                }}
-              >
+              {activeCount > 0 ? (
                 <button
+                  type="button"
                   onClick={clearAll}
-                  className="btn-outline"
-                  style={{ flex: 1, textAlign: "center" }}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    fontFamily: "var(--font-sans)",
+                    fontSize: "0.78rem",
+                    color: "var(--color-text-muted)",
+                    cursor: "pointer",
+                    textDecoration: "underline",
+                  }}
                 >
-                  Clear All
+                  Reset All Filters
                 </button>
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="btn-primary"
-                  style={{ flex: 1, textAlign: "center" }}
-                >
-                  Show Results
-                </button>
-              </div>
-            </motion.div>
-          </>
+              ) : (
+                <span />
+              )}
+
+              <button
+                type="button"
+                onClick={() => setDropdownOpen(false)}
+                style={{
+                  background: "#111111",
+                  color: "#ffffff",
+                  border: "none",
+                  padding: "0.55rem 1.25rem",
+                  fontFamily: "var(--font-sans)",
+                  fontSize: "0.78rem",
+                  fontWeight: 600,
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                Apply Filters
+              </button>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
-    </>
-  );
-}
-
-function FilterGroup({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <p className="label-caps" style={{ color: "var(--color-text-muted)", marginBottom: "0.75rem" }}>{title}</p>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>{children}</div>
     </div>
-  );
-}
-
-function FilterChip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        padding: "0.35rem 0.85rem",
-        border: "1px solid",
-        borderColor: active ? "var(--color-text)" : "var(--color-border)",
-        background: active ? "var(--color-text)" : "transparent",
-        color: active ? "var(--color-white)" : "var(--color-text-muted)",
-        fontFamily: "var(--font-sans)",
-        fontSize: "0.75rem",
-        letterSpacing: "0.04em",
-        cursor: "pointer",
-        transition: "all 0.15s",
-      }}
-    >
-      {label}
-    </button>
   );
 }
