@@ -45,14 +45,29 @@ function LoginForm() {
   }, [errorParam]);
 
   useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
-        router.replace(redirectParam);
-      } else {
-        setCheckingExisting(false);
-      }
-    });
+    const checkUser = async () => {
+      try {
+        const supabase = createClient();
+        const { data } = await supabase.auth.getUser();
+        if (data?.user) {
+          router.replace(redirectParam);
+          return;
+        }
+      } catch {}
+
+      try {
+        const res = await fetch("/api/auth/me", { cache: "no-store" });
+        const me = await res.json();
+        if (me?.authenticated) {
+          router.replace(redirectParam);
+          return;
+        }
+      } catch {}
+
+      setCheckingExisting(false);
+    };
+
+    checkUser();
   }, [redirectParam, router]);
 
   const handleGoogleSignIn = async () => {

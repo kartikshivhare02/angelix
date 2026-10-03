@@ -48,8 +48,6 @@ export function ProductDetailClient({ product }: Props) {
 
   const handleAddToCart = async () => {
     if (!isTesterSelected && product.stock_quantity === 0) return;
-    const authed = await checkAuthOrRedirect(`/product/${product.slug}`);
-    if (!authed) return;
 
     setAddingToCart(true);
     addItem({

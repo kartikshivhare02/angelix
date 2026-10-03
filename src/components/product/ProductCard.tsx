@@ -28,9 +28,6 @@ export function ProductCard({ product }: Props) {
     e.stopPropagation();
     if (adding || product.stock_quantity === 0) return;
 
-    const authed = await checkAuthOrRedirect();
-    if (!authed) return;
-
     setAdding(true);
     addItem({
       product_id: product.id,
