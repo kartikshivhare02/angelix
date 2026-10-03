@@ -32,14 +32,14 @@ export default function ReturnPolicyPage() {
         <ul>
           <li>The product received is <strong>defective, damaged, or broken</strong></li>
           <li>The product received is <strong>different from what was ordered</strong> (wrong product shipped)</li>
-          <li>The product is <strong>unopened, unused, and in original packaging</strong> within 7 days of delivery</li>
+          <li>The product is <strong>unopened, unused, and in original packaging with return tag intact</strong></li>
         </ul>
 
         <h2>2. Non-Returnable Items</h2>
         <p>The following items are not eligible for return:</p>
         <ul>
           <li>Opened or used perfume bottles</li>
-          <li>Products without original packaging</li>
+          <li>Products without original packaging or return tag</li>
           <li>Sale items or items purchased with a coupon (unless defective)</li>
           <li>Tester products (2ml, 5ml, 10ml)</li>
           <li>Products that show signs of tampering</li>
@@ -48,10 +48,10 @@ export default function ReturnPolicyPage() {
         <h2>3. How to Initiate a Return</h2>
         <p>To initiate a return, follow these steps:</p>
         <ul>
-          <li>Contact us at <a href="mailto:Surajxsingh41@gmail.com">Surajxsingh41@gmail.com</a> within <strong>48 hours</strong> of receiving your order</li>
+          <li>Contact us at <a href="mailto:Surajxsingh41@gmail.com">Surajxsingh41@gmail.com</a> with your order details</li>
           <li>Include your order number, reason for return, and clear photographs of the product and packaging</li>
-          <li>Our team will review your request within 2 business days</li>
-          <li>If approved, we will provide a return shipping address and instructions</li>
+          <li>Our team will review your request promptly</li>
+          <li>If approved, we will provide return instructions</li>
         </ul>
 
         <h2>4. Return Shipping</h2>
@@ -61,10 +61,10 @@ export default function ReturnPolicyPage() {
 
         <h2>5. Refunds</h2>
         <p>
-          Once we receive and inspect the returned product, we will process your refund within <strong>5–7 business days</strong>. Refunds will be credited to your original payment method.
+          Once we receive and inspect the returned product, we will process your refund. Refunds will be credited to your original payment method.
         </p>
         <ul>
-          <li><strong>Razorpay Payments:</strong> Refunded to the original card/UPI/bank account (2–5 business days)</li>
+          <li><strong>Razorpay Payments:</strong> Refunded to the original card/UPI/bank account</li>
           <li><strong>COD Orders:</strong> Refunded via bank transfer — please provide your bank details when contacting us</li>
         </ul>
 
@@ -75,12 +75,11 @@ export default function ReturnPolicyPage() {
 
         <h2>7. Damaged Products</h2>
         <p>
-          If your order arrives damaged, please photograph the packaging and product immediately upon receipt and contact us within <strong>48 hours</strong>. We will arrange a replacement or refund at no additional cost to you.
+          If your order arrives damaged, please photograph the packaging and product upon receipt and contact us. We will arrange a replacement or refund at no additional cost to you.
         </p>
-
         <h2>8. Cancellations</h2>
         <p>
-          Orders can be cancelled only before they are dispatched. To cancel an order, contact us immediately at <a href="mailto:Surajxsingh41@gmail.com">Surajxsingh41@gmail.com</a>. Once dispatched, the order cannot be cancelled and must follow the return process.
+          Orders can be cancelled before they are dispatched. To cancel an order, contact us immediately at <a href="mailto:Surajxsingh41@gmail.com">Surajxsingh41@gmail.com</a>. Once dispatched, the order cannot be cancelled and must follow the return process.
         </p>
 
         <h2>9. Contact</h2>

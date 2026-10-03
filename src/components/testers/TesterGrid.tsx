@@ -93,13 +93,11 @@ export function TesterGrid({ products, testerOptions = [] }: Props) {
           borderBottom: "1px solid var(--color-border)",
         }}
       >
-        {/* Gender Filter Pills */}
+        {/* Filter Pills */}
         <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
           {[
             { key: "all", label: "All Fragrances" },
-            { key: "unisex", label: "Unisex" },
-            { key: "men", label: "Men" },
-            { key: "women", label: "Women" },
+            { key: "unisex", label: "Unisex Fragrances" },
           ].map((item) => (
             <button
               key={item.key}
@@ -283,7 +281,7 @@ export function TesterGrid({ products, testerOptions = [] }: Props) {
                       marginBottom: "0.65rem",
                     }}
                   >
-                    {product.gender} · {product.concentration || "Extrait de Parfum"}
+                    Unisex · {product.concentration || "Extrait de Parfum"}
                   </p>
 
                   {/* Notes Breakdown */}

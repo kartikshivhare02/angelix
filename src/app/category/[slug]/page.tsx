@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { Product } from "@/lib/types";
@@ -8,8 +8,6 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 const CATEGORY_MAP: Record<string, { label: string; field: string; value: string }> = {
-  men: { label: "Men", field: "gender", value: "Men" },
-  women: { label: "Women", field: "gender", value: "Women" },
   unisex: { label: "Unisex", field: "gender", value: "Unisex" },
   "best-sellers": { label: "Best Sellers", field: "is_bestseller", value: "true" },
   "new-arrivals": { label: "New Arrivals", field: "is_new_arrival", value: "true" },
@@ -97,6 +95,9 @@ export default async function CategoryPage({
   searchParams?: Promise<{ gender?: string; category?: string; family?: string; sort?: string }>;
 }) {
   const { slug } = await params;
+  if (slug === "men" || slug === "women") {
+    redirect("/category/unisex");
+  }
   const sParams = (await searchParams) || {};
   const result = await getCategoryInfoAndProducts(slug);
 

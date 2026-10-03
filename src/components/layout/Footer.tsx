@@ -14,9 +14,7 @@ interface Category {
 
 const DEFAULT_SHOP_LINKS = [
   { label: "All Perfumes", href: "/shop" },
-  { label: "Men", href: "/category/men" },
-  { label: "Women", href: "/category/women" },
-  { label: "Unisex", href: "/category/unisex" },
+  { label: "Unisex Perfumes", href: "/category/unisex" },
   { label: "Testers", href: "/testers" },
   { label: "Best Sellers", href: "/category/best-sellers" },
 ];
@@ -30,7 +28,10 @@ export function Footer() {
       .then((res) => res.json())
       .then((data) => {
         if (data.categories && data.categories.length > 0) {
-          setCategories(data.categories);
+          const filtered = data.categories.filter(
+            (c: Category) => c.slug !== "men" && c.slug !== "women"
+          );
+          setCategories(filtered);
         }
         setLoaded(true);
       })

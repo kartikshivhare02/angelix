@@ -23,7 +23,11 @@ export async function GET() {
       return NextResponse.json({ categories: [] });
     }
 
-    return NextResponse.json({ categories: data || [] });
+    const filtered = (data || []).filter(
+      (c) => c.slug !== "men" && c.slug !== "women" && c.name.toLowerCase() !== "men" && c.name.toLowerCase() !== "women"
+    );
+
+    return NextResponse.json({ categories: filtered });
   } catch {
     return NextResponse.json({ categories: [] });
   }

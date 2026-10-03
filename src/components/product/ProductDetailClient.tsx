@@ -156,7 +156,7 @@ export function ProductDetailClient({ product }: Props) {
             🚚 Free shipping on orders above ₹1,499
           </p>
           <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.9rem", color: "var(--color-text-muted)", lineHeight: 1.7 }}>
-            ↩️ Returns accepted within 7 days for unopened, sealed products.
+            ↩️ Returns accepted for unopened, sealed products with return tag intact.
           </p>
         </div>
       ),

@@ -35,7 +35,10 @@ export function ShopFilters({ active, totalCount }: Props) {
     fetch("/api/categories")
       .then((r) => r.json())
       .then((d) => {
-        if (d.categories) setCategories(d.categories);
+        if (d.categories) {
+          const filtered = d.categories.filter((c: { slug: string }) => c.slug !== "men" && c.slug !== "women");
+          setCategories(filtered);
+        }
       })
       .catch(() => {});
   }, []);
@@ -338,49 +341,7 @@ export function ShopFilters({ active, totalCount }: Props) {
                 </div>
               </div>
 
-              {/* Gender Filter */}
-              <div>
-                <h4
-                  style={{
-                    fontFamily: "var(--font-sans)",
-                    fontSize: "0.72rem",
-                    fontWeight: 700,
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                    color: "var(--color-text-muted)",
-                    marginBottom: "0.75rem",
-                  }}
-                >
-                  Gender
-                </h4>
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                  {GENDERS.map((g) => {
-                    const isSelected = active.gender === g;
-                    return (
-                      <button
-                        key={g}
-                        type="button"
-                        onClick={() => setFilter("gender", g)}
-                        style={{
-                          textAlign: "left",
-                          background: isSelected ? "var(--color-bg-soft)" : "transparent",
-                          color: isSelected ? "#111" : "var(--color-text-muted)",
-                          border: isSelected ? "1px solid #111" : "1px solid transparent",
-                          padding: "0.4rem 0.6rem",
-                          borderRadius: "4px",
-                          fontFamily: "var(--font-sans)",
-                          fontSize: "0.8rem",
-                          fontWeight: isSelected ? 600 : 400,
-                          cursor: "pointer",
-                          transition: "all 0.15s ease",
-                        }}
-                      >
-                        {g}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+
 
               {/* Fragrance Family */}
               <div>
