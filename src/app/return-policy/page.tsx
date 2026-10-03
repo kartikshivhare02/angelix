@@ -22,69 +22,46 @@ export default function ReturnPolicyPage() {
       {/* Notice box */}
       <div style={{ background: "var(--color-cream)", border: "1px solid var(--color-border)", padding: "1.5rem 2rem", marginBottom: "2.5rem" }}>
         <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.88rem", color: "var(--color-text)", lineHeight: 1.8 }}>
-          <strong>Please Note:</strong> Due to the nature of fragrance products and hygiene standards, we do not accept returns of opened or used perfumes unless the product is defective or damaged. Please read this policy carefully before placing an order.
+          <strong>Notice:</strong> Due to the personal and artisanal nature of fine fragrance products and strict hygiene standards, <strong>all sales are final</strong>. We do not accept general returns, refunds, or exchanges. Any return, replacement, or refund requests are strictly subject to review and approval at the sole discretion of the owner / brand management.
         </p>
       </div>
 
       <div className="legal-body">
-        <h2>1. Return Eligibility</h2>
-        <p>We accept returns only in the following cases:</p>
-        <ul>
-          <li>The product received is <strong>defective, damaged, or broken</strong></li>
-          <li>The product received is <strong>different from what was ordered</strong> (wrong product shipped)</li>
-          <li>The product is <strong>unopened, unused, and in original packaging with return tag intact</strong></li>
-        </ul>
-
-        <h2>2. Non-Returnable Items</h2>
-        <p>The following items are not eligible for return:</p>
-        <ul>
-          <li>Opened or used perfume bottles</li>
-          <li>Products without original packaging or return tag</li>
-          <li>Sale items or items purchased with a coupon (unless defective)</li>
-          <li>Tester products (2ml, 5ml, 10ml)</li>
-          <li>Products that show signs of tampering</li>
-        </ul>
-
-        <h2>3. How to Initiate a Return</h2>
-        <p>To initiate a return, follow these steps:</p>
-        <ul>
-          <li>Contact us at <a href="mailto:Surajxsingh41@gmail.com">Surajxsingh41@gmail.com</a> with your order details</li>
-          <li>Include your order number, reason for return, and clear photographs of the product and packaging</li>
-          <li>Our team will review your request promptly</li>
-          <li>If approved, we will provide return instructions</li>
-        </ul>
-
-        <h2>4. Return Shipping</h2>
+        <h2>1. Strict No-Return Policy</h2>
         <p>
-          If the return is due to our error (wrong product, defective item), we will cover the return shipping cost. For other eligible returns, return shipping charges are the responsibility of the customer.
-        </p>
-
-        <h2>5. Refunds</h2>
-        <p>
-          Once we receive and inspect the returned product, we will process your refund. Refunds will be credited to your original payment method.
+          At ANGELIX by Suraj, every bottle is crafted, inspected, and sealed under strict quality controls. For health, safety, and hygiene reasons:
         </p>
         <ul>
-          <li><strong>Razorpay Payments:</strong> Refunded to the original card/UPI/bank account</li>
-          <li><strong>COD Orders:</strong> Refunded via bank transfer — please provide your bank details when contacting us</li>
+          <li>We do <strong>not</strong> accept returns for change of mind or personal scent preference.</li>
+          <li>Opened, sprayed, or unsealed fragrance bottles cannot be returned under any circumstances.</li>
+          <li>Discovery testers (2ml, 5ml, 10ml) and promotional items are strictly non-returnable.</li>
         </ul>
 
-        <h2>6. Exchange Policy</h2>
+        <h2>2. Owner Discretion &amp; Damaged Items</h2>
         <p>
-          We currently do not offer direct product exchanges. If you wish to exchange a product, please initiate a return (subject to eligibility) and place a new order for the desired product.
+          Returns, replacements, or refunds are <strong>strictly held at the discretion of the owner</strong> and brand management. Consideration is granted solely for:
+        </p>
+        <ul>
+          <li>Severe transit damage (broken bottle or damaged atomizer)</li>
+          <li>Wrong product delivered due to fulfillment error</li>
+        </ul>
+
+        <h2>3. Request Process (Transit Damage or Incorrect Item)</h2>
+        <p>If you believe your order qualifies for an owner-discretion evaluation:</p>
+        <ul>
+          <li>Contact us at <a href="mailto:Surajxsingh41@gmail.com">Surajxsingh41@gmail.com</a> or via WhatsApp at <a href="https://wa.me/917067697646">+91 70676 97646</a> immediately upon delivery.</li>
+          <li>Provide your order number, clear unboxing photographs, and uncut video footage demonstrating the issue.</li>
+          <li>Our management team will evaluate your case individually and decide whether a replacement or credit is granted.</li>
+        </ul>
+
+        <h2>4. Cancellations</h2>
+        <p>
+          Orders can be cancelled before they enter processing and dispatch. Once an order is dispatched from our fulfillment facility, it cannot be cancelled or returned.
         </p>
 
-        <h2>7. Damaged Products</h2>
+        <h2>5. Contact</h2>
         <p>
-          If your order arrives damaged, please photograph the packaging and product upon receipt and contact us. We will arrange a replacement or refund at no additional cost to you.
-        </p>
-        <h2>8. Cancellations</h2>
-        <p>
-          Orders can be cancelled before they are dispatched. To cancel an order, contact us immediately at <a href="mailto:Surajxsingh41@gmail.com">Surajxsingh41@gmail.com</a>. Once dispatched, the order cannot be cancelled and must follow the return process.
-        </p>
-
-        <h2>9. Contact</h2>
-        <p>
-          For all return and refund queries, contact us at <a href="mailto:Surajxsingh41@gmail.com">Surajxsingh41@gmail.com</a> or reach us via <Link href="/contact">our contact page</Link>.
+          For any questions regarding your order or our policies, please contact us at <a href="mailto:Surajxsingh41@gmail.com">Surajxsingh41@gmail.com</a> or reach out to us via <Link href="/contact">our contact page</Link>.
         </p>
       </div>
 
