@@ -67,11 +67,22 @@ export function ProductDetailClient({ product }: Props) {
   };
 
   const handleBuyNow = async () => {
-    const authed = await checkAuthOrRedirect(`/product/${product.slug}`);
+    addItem({
+      product_id: product.id,
+      name: isTesterSelected ? `${product.name} (${selectedSize}ml Tester Vial)` : product.name,
+      slug: product.slug,
+      image_url: product.main_image_url,
+      price: activePrice,
+      original_price: isTesterSelected ? activePrice : product.original_price,
+      volume_ml: selectedSize,
+      concentration: isTesterSelected ? "Tester Vial" : product.concentration,
+      quantity: qty,
+    });
+
+    const authed = await checkAuthOrRedirect("/checkout");
     if (!authed) return;
 
-    await handleAddToCart();
-    setTimeout(() => window.location.href = "/checkout", 400);
+    window.location.href = "/checkout";
   };
 
   const toggleSection = (key: string) =>

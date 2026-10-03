@@ -36,12 +36,24 @@ function LoginForm() {
   const redirectParam = searchParams.get("redirect") || searchParams.get("next") || "/account";
   const errorParam = searchParams.get("error");
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [checkingExisting, setCheckingExisting] = useState(true);
 
   useEffect(() => {
     if (errorParam === "auth_failed") {
       toast.error("Google authentication could not be completed. Please try again.");
     }
   }, [errorParam]);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        router.replace(redirectParam);
+      } else {
+        setCheckingExisting(false);
+      }
+    });
+  }, [redirectParam, router]);
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
@@ -70,6 +82,14 @@ function LoginForm() {
       setGoogleLoading(false);
     }
   };
+
+  if (checkingExisting) {
+    return (
+      <div className="container-site section-py" style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "50vh" }}>
+        <Loader2 className="animate-spin" size={28} style={{ color: "var(--color-text-muted)" }} />
+      </div>
+    );
+  }
 
   return (
     <div className="container-site section-py" style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "60vh" }}>
