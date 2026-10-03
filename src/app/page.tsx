@@ -6,7 +6,6 @@ import { FeaturedFragrance } from "@/components/home/FeaturedFragrance";
 import { TesterCTA } from "@/components/home/TesterCTA";
 import { ImageOnlyCTA } from "@/components/home/ImageOnlyCTA";
 import { BrandStory } from "@/components/home/BrandStory";
-import { Newsletter } from "@/components/home/Newsletter";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { Product } from "@/lib/types";
 import { BannerItem } from "@/components/home/HeroBanner";
@@ -143,7 +142,6 @@ export default async function HomePage() {
         linkUrl={settings?.cta_link_url || "/shop"}
       />
       <BrandStory />
-      <Newsletter />
     </>
   );
 }
