@@ -4,28 +4,18 @@ import { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/lib/types";
-import { useCart } from "@/lib/cart-store";
-import { checkAuthOrRedirect } from "@/lib/auth-check";
-import { ShoppingBag, Sparkles, Check, ArrowRight, ShieldCheck, Flame } from "lucide-react";
-import { formatPrice } from "@/lib/utils";
+import { Sparkles, MessageCircle } from "lucide-react";
+import type { TesterOption } from "@/app/testers/page";
 
 interface Props {
   products: Product[];
+  testerOptions?: TesterOption[];
 }
 
-export function TesterGrid({ products }: Props) {
-  const { addItem, toggleCart } = useCart();
-  const [selectedSizes, setSelectedSizes] = useState<Record<string, number>>({});
-  const [addingId, setAddingId] = useState<string | null>(null);
+export function TesterGrid({ products, testerOptions = [] }: Props) {
+  const [selectedTesterIds, setSelectedTesterIds] = useState<Record<string, string>>({});
   const [genderFilter, setGenderFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
-
-  const getSizePrice = (size: number) => {
-    if (size === 2) return 99;
-    if (size === 5) return 199;
-    if (size === 10) return 349;
-    return 99;
-  };
 
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
@@ -40,31 +30,34 @@ export function TesterGrid({ products }: Props) {
     });
   }, [products, genderFilter, searchQuery]);
 
-  const handleAddTester = async (product: Product, sizeOverride?: number) => {
-    const authed = await checkAuthOrRedirect("/testers");
-    if (!authed) return;
+  const getProductTesterVariants = (product: Product) => {
+    const dbVariants = testerOptions.filter((t) => t.product_id === product.id);
+    if (dbVariants.length > 0) {
+      return dbVariants.map((v) => ({
+        id: v.id,
+        size_ml: v.size_ml,
+        price: v.price,
+      }));
+    }
+    // Fallback to real product price and volume from database
+    const defaultPrice = product.sale_price || product.original_price || 199;
+    const defaultSize = product.volume_ml || 5;
+    return [
+      {
+        id: `default-${product.id}`,
+        size_ml: defaultSize,
+        price: defaultPrice,
+      },
+    ];
+  };
 
-    const size = sizeOverride || selectedSizes[product.id] || 2;
-    const price = getSizePrice(size);
-    const itemKey = `${product.id}-${size}`;
-
-    setAddingId(itemKey);
-    addItem({
-      product_id: product.id,
-      name: `${product.name} (${size}ml Tester Vial)`,
-      slug: product.slug,
-      image_url: product.main_image_url,
-      price,
-      original_price: price,
-      volume_ml: size,
-      concentration: "Sample Vial",
-      quantity: 1,
-    });
-
-    setTimeout(() => {
-      setAddingId(null);
-      toggleCart();
-    }, 600);
+  const openWhatsAppOrder = (productName: string, sizeMl: number, price: number) => {
+    const text = `Hi ANGELIX! I want to order the ${productName} (${sizeMl}ml Tester Vial) for ₹${price}. Please assist me 1-on-1 with my order.`;
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=917067697646&text=${encodeURIComponent(text)}`;
+    const win = window.open(whatsappUrl, "_blank");
+    if (!win || win.closed || typeof win.closed === "undefined") {
+      window.location.href = whatsappUrl;
+    }
   };
 
   if (products.length === 0) {
@@ -157,10 +150,9 @@ export function TesterGrid({ products }: Props) {
       {/* ── Tester Cards Grid ── */}
       <div className="tester-grid">
         {filteredProducts.map((product) => {
-          const currentSize = selectedSizes[product.id] || 2;
-          const currentPrice = getSizePrice(currentSize);
-          const itemKey = `${product.id}-${currentSize}`;
-          const isAdding = addingId === itemKey;
+          const variants = getProductTesterVariants(product);
+          const selectedId = selectedTesterIds[product.id] || variants[0]?.id;
+          const activeOption = variants.find((v) => v.id === selectedId) || variants[0];
 
           return (
             <div
@@ -244,7 +236,7 @@ export function TesterGrid({ products }: Props) {
                   )}
                 </div>
 
-                {/* 100% Settle Cashback Tag */}
+                {/* 100% Settle Tag */}
                 <div
                   style={{
                     position: "absolute",
@@ -337,77 +329,79 @@ export function TesterGrid({ products }: Props) {
                   )}
                 </div>
 
-                {/* Size Selector Buttons */}
+                {/* Real Dynamic Tester Variant Selector */}
                 <div>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.4rem" }}>
-                    <p className="label-caps" style={{ color: "var(--color-text-muted)", fontSize: "0.66rem" }}>
-                      Select Sample Size:
-                    </p>
-                    <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.7rem", color: "#8a6d3b", fontWeight: 600 }}>
-                      100% Refundable on Bottle
-                    </span>
-                  </div>
+                  {variants.length > 1 && (
+                    <>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.4rem" }}>
+                        <p className="label-caps" style={{ color: "var(--color-text-muted)", fontSize: "0.66rem" }}>
+                          Select Tester Size:
+                        </p>
+                      </div>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0.4rem", marginBottom: "0.85rem" }}>
-                    {[
-                      { size: 2, label: "2ml", price: 99, tag: "Vial" },
-                      { size: 5, label: "5ml", price: 199, tag: "Travel" },
-                      { size: 10, label: "10ml", price: 349, tag: "Pocket" },
-                    ].map((item) => (
-                      <button
-                        key={item.size}
-                        type="button"
-                        onClick={() => setSelectedSizes((prev) => ({ ...prev, [product.id]: item.size }))}
-                        style={{
-                          padding: "0.5rem 0.25rem",
-                          border: currentSize === item.size ? "2px solid #111" : "1px solid var(--color-border)",
-                          background: currentSize === item.size ? "#fafafa" : "#fff",
-                          cursor: "pointer",
-                          textAlign: "center",
-                          display: "flex",
-                          flexDirection: "column",
-                          alignItems: "center",
-                          borderRadius: "2px",
-                          transition: "all 0.15s ease",
-                        }}
-                      >
-                        <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.78rem", fontWeight: 700 }}>
-                          {item.label}
-                        </span>
-                        <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.72rem", color: currentSize === item.size ? "#111" : "var(--color-text-muted)", fontWeight: 600 }}>
-                          ₹{item.price}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
+                      <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(variants.length, 3)}, 1fr)`, gap: "0.4rem", marginBottom: "0.85rem" }}>
+                        {variants.map((v) => (
+                          <button
+                            key={v.id}
+                            type="button"
+                            onClick={() => setSelectedTesterIds((prev) => ({ ...prev, [product.id]: v.id }))}
+                            style={{
+                              padding: "0.5rem 0.25rem",
+                              border: activeOption.id === v.id ? "2px solid #111" : "1px solid var(--color-border)",
+                              background: activeOption.id === v.id ? "#fafafa" : "#fff",
+                              cursor: "pointer",
+                              textAlign: "center",
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "center",
+                              borderRadius: "2px",
+                              transition: "all 0.15s ease",
+                            }}
+                          >
+                            <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.78rem", fontWeight: 700 }}>
+                              {v.size_ml}ml
+                            </span>
+                            <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.72rem", color: activeOption.id === v.id ? "#111" : "var(--color-text-muted)", fontWeight: 600 }}>
+                              ₹{v.price}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
 
-                  {/* Add to Bag Button */}
-                  <button
-                    type="button"
-                    onClick={() => handleAddTester(product)}
-                    disabled={isAdding}
+                  {/* WhatsApp Direct Order Button */}
+                  <a
+                    href={`https://api.whatsapp.com/send?phone=917067697646&text=${encodeURIComponent(
+                      `Hi ANGELIX! I want to order the ${product.name} (${activeOption.size_ml}ml Tester Vial) for ₹${activeOption.price}. Please assist me 1-on-1 with my order.`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      openWhatsAppOrder(product.name, activeOption.size_ml, activeOption.price);
+                    }}
                     className="btn-primary"
                     style={{
                       width: "100%",
-                      padding: "0.8rem 1rem",
-                      fontSize: "0.8rem",
+                      padding: "0.85rem 1rem",
+                      fontSize: "0.82rem",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      gap: "0.45rem",
-                      background: isAdding ? "#166534" : "#111",
+                      gap: "0.5rem",
+                      background: "#25D366",
+                      color: "#fff",
+                      border: "none",
+                      fontWeight: 600,
+                      textDecoration: "none",
+                      boxShadow: "0 4px 12px rgba(37, 211, 102, 0.25)",
+                      transition: "all 0.2s ease",
+                      cursor: "pointer",
                     }}
                   >
-                    {isAdding ? (
-                      <>
-                        <Check size={15} /> Added to Bag
-                      </>
-                    ) : (
-                      <>
-                        <ShoppingBag size={15} /> Add {currentSize}ml Tester — ₹{currentPrice}
-                      </>
-                    )}
-                  </button>
+                    <MessageCircle size={17} strokeWidth={2} /> Order {activeOption.size_ml}ml Tester via WhatsApp — ₹{activeOption.price}
+                  </a>
 
                   <div style={{ marginTop: "0.6rem", textAlign: "center" }}>
                     <Link
@@ -420,7 +414,7 @@ export function TesterGrid({ products }: Props) {
                       }}
                       className="hover:text-black"
                     >
-                      View 100ml Full Bottle Details →
+                      View Full Bottle Details →
                     </Link>
                   </div>
                 </div>
@@ -450,4 +444,3 @@ export function TesterGrid({ products }: Props) {
     </div>
   );
 }
-

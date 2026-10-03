@@ -102,7 +102,7 @@ export default function ContactPage() {
                 </h2>
                 <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
                   <a
-                    href="mailto:Surajxsingh412@gmail.com"
+                    href="mailto:Surajxsingh41@gmail.com"
                     style={{ display: "flex", alignItems: "center", gap: "0.875rem", textDecoration: "none", color: "var(--color-text)" }}
                   >
                     <div style={{ width: "40px", height: "40px", border: "1px solid var(--color-border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -110,7 +110,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <p className="label-caps" style={{ color: "var(--color-text-muted)", marginBottom: "0.2rem" }}>Email</p>
-                      <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem" }}>Surajxsingh412@gmail.com</p>
+                      <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem" }}>Surajxsingh41@gmail.com</p>
                     </div>
                   </a>
 
@@ -130,7 +130,7 @@ export default function ContactPage() {
                   </a>
 
                   <a
-                    href="https://instagram.com/angelix"
+                    href="https://www.instagram.com/angelix.ltd?stkn=MTdmdGdmemFyNW5hcg=="
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{ display: "flex", alignItems: "center", gap: "0.875rem", textDecoration: "none", color: "var(--color-text)" }}
@@ -140,7 +140,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <p className="label-caps" style={{ color: "var(--color-text-muted)", marginBottom: "0.2rem" }}>Instagram</p>
-                      <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem" }}>@angelix</p>
+                      <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem" }}>@angelix.ltd</p>
                     </div>
                   </a>
                 </div>

@@ -50,8 +50,17 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
-export default async function FragranceFamilyPage({ params }: { params: Promise<{ slug: string }> }) {
+import { ShopFilters } from "@/components/shop/ShopFilters";
+
+export default async function FragranceFamilyPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ gender?: string; category?: string; family?: string; sort?: string }>;
+}) {
   const { slug } = await params;
+  const sParams = (await searchParams) || {};
   const meta = FAMILY_META[slug];
 
   if (!meta) notFound();
@@ -110,11 +119,8 @@ export default async function FragranceFamilyPage({ params }: { params: Promise<
 
       {/* Products */}
       <div className="container-site section-py">
-        <div style={{ marginBottom: "2rem" }}>
-          <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.8rem", color: "var(--color-text-muted)" }}>
-            {products.length} fragrance{products.length !== 1 ? "s" : ""} in {meta.name}
-          </p>
-        </div>
+        {/* Unified Filter & Sort Bar */}
+        <ShopFilters active={sParams} totalCount={products.length} />
 
         {products.length === 0 ? (
           <div style={{ textAlign: "center", padding: "5rem 2rem", border: "1px solid var(--color-border)" }}>

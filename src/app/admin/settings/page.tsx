@@ -2,15 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { ImageUploadPicker } from "@/components/admin/ImageUploadPicker";
 
 const DEFAULTS = {
   brand_name: "ANGELIX",
   brand_subtitle: "by Suraj",
   logo_url: "/logo.png",
   favicon_url: "/favicon.ico",
-  instagram_url: "https://instagram.com/angelix",
+  instagram_url: "https://www.instagram.com/angelix.ltd?stkn=MTdmdGdmemFyNW5hcg==",
   whatsapp_number: "+917067697646",
-  support_email: "Surajxsingh412@gmail.com",
+  support_email: "Surajxsingh41@gmail.com",
   shipping_charge: 99,
   free_shipping_min: 1499,
   currency: "INR",
@@ -18,6 +19,8 @@ const DEFAULTS = {
   razorpay_enabled: true,
   cod_enabled: true,
   order_confirmation_message: "Your order has been placed. We will share tracking updates on WhatsApp.",
+  cta_image_url: "/images/cta-collection.jpg",
+  cta_link_url: "/shop",
   footer_tagline: "A sophisticated fragrance house crafting premium scents for the discerning.",
   seo_title: "ANGELIX by Suraj — Premium Luxury Fragrances",
   seo_description: "Discover handcrafted luxury perfumes by ANGELIX by Suraj.",
@@ -80,16 +83,33 @@ export default function AdminSettingsPage() {
           </Row>
         </Card>
 
+        {/* Collection CTA Banner */}
+        <Card title="Homepage Collection CTA Image">
+          <Row label="CTA Image">
+            <ImageUploadPicker
+              value={settings.cta_image_url ?? "/images/cta-collection.jpg"}
+              onChange={(url) => set("cta_image_url", url)}
+              label="Collection CTA Image"
+            />
+            <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.72rem", color: "#aaa", marginTop: "0.25rem" }}>
+              Maintained by Admin. This image is displayed as the single main collection CTA on the homepage.
+            </p>
+          </Row>
+          <Row label="CTA Target URL">
+            <input className="input-base" value={settings.cta_link_url ?? "/shop"} onChange={(e) => set("cta_link_url", e.target.value)} placeholder="/shop" />
+          </Row>
+        </Card>
+
         {/* Contact & Social */}
         <Card title="Contact & Social">
           <Row label="Instagram URL">
-            <input className="input-base" value={settings.instagram_url ?? ""} onChange={(e) => set("instagram_url", e.target.value)} placeholder="https://instagram.com/angelix" />
+            <input className="input-base" value={settings.instagram_url ?? ""} onChange={(e) => set("instagram_url", e.target.value)} placeholder="https://www.instagram.com/angelix.ltd?stkn=MTdmdGdmemFyNW5hcg==" />
           </Row>
           <Row label="WhatsApp Number">
             <input className="input-base" value={settings.whatsapp_number ?? ""} onChange={(e) => set("whatsapp_number", e.target.value)} placeholder="+91 70676 97646" />
           </Row>
           <Row label="Support Email">
-            <input type="email" className="input-base" value={settings.support_email ?? ""} onChange={(e) => set("support_email", e.target.value)} placeholder="Surajxsingh412@gmail.com" />
+            <input type="email" className="input-base" value={settings.support_email ?? ""} onChange={(e) => set("support_email", e.target.value)} placeholder="Surajxsingh41@gmail.com" />
           </Row>
           <Row label="Business Address">
             <textarea className="input-base" value={settings.business_address ?? ""} onChange={(e) => set("business_address", e.target.value)} rows={3} placeholder="Full business address..." style={{ resize: "vertical" }} />

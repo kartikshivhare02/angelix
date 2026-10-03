@@ -85,11 +85,27 @@ async function getFeaturedProducts(): Promise<Product[]> {
   }
 }
 
+async function getAdminSettings() {
+  try {
+    let supabase;
+    try {
+      supabase = await createAdminClient();
+    } catch {
+      supabase = await createClient();
+    }
+    const { data } = await supabase.from("settings").select("*").eq("id", 1).single();
+    return data || {};
+  } catch {
+    return {};
+  }
+}
+
 export default async function HomePage() {
-  const [banners, categories, products] = await Promise.all([
+  const [banners, categories, products, settings] = await Promise.all([
     getBanners(),
     getCategories(),
     getFeaturedProducts(),
+    getAdminSettings(),
   ]);
   const featuredProduct = products.find((p) => p.is_featured) || products[0] || null;
 
@@ -122,7 +138,10 @@ export default async function HomePage() {
       )}
       <FeaturedFragrance product={featuredProduct} />
       <TesterCTA />
-      <ImageOnlyCTA />
+      <ImageOnlyCTA
+        imageUrl={settings?.cta_image_url || "/images/cta-collection.jpg"}
+        linkUrl={settings?.cta_link_url || "/shop"}
+      />
       <BrandStory />
       <Newsletter />
     </>

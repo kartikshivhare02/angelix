@@ -96,10 +96,10 @@ const jsonLdOrganization = {
         "@type": "ContactPoint",
         telephone: "+91-7067697646",
         contactType: "customer service",
-        email: "Surajxsingh412@gmail.com",
+        email: "Surajxsingh41@gmail.com",
         availableLanguage: ["English", "Hindi"],
       },
-      sameAs: ["https://instagram.com/angelix"],
+      sameAs: ["https://www.instagram.com/angelix.ltd?stkn=MTdmdGdmemFyNW5hcg=="],
     },
     {
       "@type": "WebSite",

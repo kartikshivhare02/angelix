@@ -48,7 +48,7 @@ export default function ReturnPolicyPage() {
         <h2>3. How to Initiate a Return</h2>
         <p>To initiate a return, follow these steps:</p>
         <ul>
-          <li>Contact us at <a href="mailto:Surajxsingh412@gmail.com">Surajxsingh412@gmail.com</a> within <strong>48 hours</strong> of receiving your order</li>
+          <li>Contact us at <a href="mailto:Surajxsingh41@gmail.com">Surajxsingh41@gmail.com</a> within <strong>48 hours</strong> of receiving your order</li>
           <li>Include your order number, reason for return, and clear photographs of the product and packaging</li>
           <li>Our team will review your request within 2 business days</li>
           <li>If approved, we will provide a return shipping address and instructions</li>
@@ -80,12 +80,12 @@ export default function ReturnPolicyPage() {
 
         <h2>8. Cancellations</h2>
         <p>
-          Orders can be cancelled only before they are dispatched. To cancel an order, contact us immediately at <a href="mailto:Surajxsingh412@gmail.com">Surajxsingh412@gmail.com</a>. Once dispatched, the order cannot be cancelled and must follow the return process.
+          Orders can be cancelled only before they are dispatched. To cancel an order, contact us immediately at <a href="mailto:Surajxsingh41@gmail.com">Surajxsingh41@gmail.com</a>. Once dispatched, the order cannot be cancelled and must follow the return process.
         </p>
 
         <h2>9. Contact</h2>
         <p>
-          For all return and refund queries, contact us at <a href="mailto:Surajxsingh412@gmail.com">Surajxsingh412@gmail.com</a> or reach us via <Link href="/contact">our contact page</Link>.
+          For all return and refund queries, contact us at <a href="mailto:Surajxsingh41@gmail.com">Surajxsingh41@gmail.com</a> or reach us via <Link href="/contact">our contact page</Link>.
         </p>
       </div>
 

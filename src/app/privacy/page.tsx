@@ -95,7 +95,7 @@ export default function PrivacyPolicyPage() {
 
         <h2>12. Contact Us</h2>
         <p>
-          For any privacy-related questions, contact us at <a href="mailto:Surajxsingh412@gmail.com">Surajxsingh412@gmail.com</a>.
+          For any privacy-related questions, contact us at <a href="mailto:Surajxsingh41@gmail.com">Surajxsingh41@gmail.com</a>.
         </p>
       </div>
 

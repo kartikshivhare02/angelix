@@ -131,7 +131,7 @@ export function Footer() {
             <p className="label-caps" style={{ color: "var(--color-text-muted)" }}>Contact Us</p>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
               <a
-                href="mailto:Surajxsingh412@gmail.com"
+                href="mailto:Surajxsingh41@gmail.com"
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -144,7 +144,7 @@ export function Footer() {
                 className="hover:text-black transition-colors"
               >
                 <Mail size={15} strokeWidth={1.5} />
-                <span>Surajxsingh412@gmail.com</span>
+                <span>Surajxsingh41@gmail.com</span>
               </a>
               <a
                 href="https://wa.me/917067697646"
@@ -176,14 +176,14 @@ export function Footer() {
                 <MessageCircle size={18} strokeWidth={1.5} />
               </a>
               <a
-                href="mailto:Surajxsingh412@gmail.com"
+                href="mailto:Surajxsingh41@gmail.com"
                 aria-label="Email us"
                 className="hover:opacity-50 transition-opacity"
               >
                 <Mail size={18} strokeWidth={1.5} />
               </a>
               <a
-                href="https://instagram.com"
+                href="https://www.instagram.com/angelix.ltd?stkn=MTdmdGdmemFyNW5hcg=="
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Instagram"

@@ -87,8 +87,17 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
-export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
+import { ShopFilters } from "@/components/shop/ShopFilters";
+
+export default async function CategoryPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ gender?: string; category?: string; family?: string; sort?: string }>;
+}) {
   const { slug } = await params;
+  const sParams = (await searchParams) || {};
   const result = await getCategoryInfoAndProducts(slug);
 
   if (!result) notFound();
@@ -112,7 +121,8 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
         </p>
       </div>
 
-      {/* Category quick links */}
+      {/* Unified Filter & Sort Bar */}
+      <ShopFilters active={sParams} totalCount={products.length} />
       <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "2rem" }}>
         <Link
           href="/shop"

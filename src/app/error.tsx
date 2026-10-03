@@ -48,8 +48,8 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
       >
         We apologise for the inconvenience. Please try again or return to the homepage.
         If this issue persists, contact us at{" "}
-        <a href="mailto:Surajxsingh412@gmail.com" style={{ color: "var(--color-text)" }}>
-          Surajxsingh412@gmail.com
+        <a href="mailto:Surajxsingh41@gmail.com" style={{ color: "var(--color-text)" }}>
+          Surajxsingh41@gmail.com
         </a>.
       </p>
 

@@ -260,7 +260,7 @@ export function FullscreenMenu({ isOpen, onClose }: Props) {
             >
               <p className="label-caps" style={{ color: "var(--color-text-muted)" }}>Follow Us</p>
               <a
-                href="https://instagram.com"
+                href="https://www.instagram.com/angelix.ltd?stkn=MTdmdGdmemFyNW5hcg=="
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Instagram"

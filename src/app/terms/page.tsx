@@ -81,7 +81,7 @@ export default function TermsPage() {
 
         <h2>12. Contact</h2>
         <p>
-          For queries regarding these Terms, contact us at <a href="mailto:Surajxsingh412@gmail.com">Surajxsingh412@gmail.com</a>.
+          For queries regarding these Terms, contact us at <a href="mailto:Surajxsingh41@gmail.com">Surajxsingh41@gmail.com</a>.
         </p>
       </div>
 

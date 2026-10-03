@@ -76,12 +76,12 @@ export default function ShippingPolicyPage() {
 
         <h2>8. Damaged or Lost Shipments</h2>
         <p>
-          If your order arrives damaged or is lost in transit, please contact us within <strong>48 hours</strong> of the expected delivery date at <a href="mailto:Surajxsingh412@gmail.com">Surajxsingh412@gmail.com</a> with your order number and photographs of the damaged packaging. We will investigate and resolve promptly.
+          If your order arrives damaged or is lost in transit, please contact us within <strong>48 hours</strong> of the expected delivery date at <a href="mailto:Surajxsingh41@gmail.com">Surajxsingh41@gmail.com</a> with your order number and photographs of the damaged packaging. We will investigate and resolve promptly.
         </p>
 
         <h2>9. Contact</h2>
         <p>
-          For shipping queries, contact us at <a href="mailto:Surajxsingh412@gmail.com">Surajxsingh412@gmail.com</a> or via WhatsApp at <a href="https://wa.me/917067697646">+91 70676 97646</a>.
+          For shipping queries, contact us at <a href="mailto:Surajxsingh41@gmail.com">Surajxsingh41@gmail.com</a> or via WhatsApp at <a href="https://wa.me/917067697646">+91 70676 97646</a>.
         </p>
       </div>
 

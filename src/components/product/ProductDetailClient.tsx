@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Minus, Plus, ShoppingBag, Zap, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from "lucide-react";
+import { Minus, Plus, ShoppingBag, Zap, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, MessageCircle } from "lucide-react";
 import { Product } from "@/lib/types";
 import { formatPrice, computeDiscountedPrice, formatProductSize, isSolidProduct } from "@/lib/utils";
 import { useCart } from "@/lib/cart-store";
@@ -567,6 +567,31 @@ export function ProductDetailClient({ product }: Props) {
                 <Zap size={16} strokeWidth={1.5} />
                 {isTesterSelected ? `Buy ${selectedSize}ml Tester Now` : "Buy Now"}
               </button>
+            )}
+
+            {product.tester_available && (
+              <a
+                href={`https://wa.me/917067697646?text=${encodeURIComponent(
+                  `Hi ANGELIX! I want to order a Tester Vial of ${product.name}. Please assist me 1-on-1 with my order.`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary"
+                style={{
+                  width: "100%",
+                  justifyContent: "center",
+                  gap: "0.5rem",
+                  background: "#25D366",
+                  color: "#fff",
+                  border: "none",
+                  fontWeight: 600,
+                  textDecoration: "none",
+                  marginTop: "0.25rem",
+                  boxShadow: "0 4px 12px rgba(37, 211, 102, 0.25)",
+                }}
+              >
+                <MessageCircle size={17} strokeWidth={2} /> Order Tester Vial via WhatsApp
+              </a>
             )}
           </div>
 

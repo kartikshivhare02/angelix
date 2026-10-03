@@ -2,31 +2,49 @@ import { createClient } from "@/lib/supabase/server";
 import { Product } from "@/lib/types";
 import { TesterGrid } from "@/components/testers/TesterGrid";
 import Link from "next/link";
-import { Sparkles, ShieldCheck, ArrowRight, Truck, Check } from "lucide-react";
+import { Sparkles, ShieldCheck, Truck, MessageCircle } from "lucide-react";
 
 export const metadata = {
-  title: "Fragrance Testers & Discovery Sets — ANGELIX by Suraj",
+  title: "Fragrance Testers & Discovery — ANGELIX by Suraj",
   description:
-    "Experience luxury on your skin before committing to a full bottle. Miniature vials in 2ml, 5ml, and 10ml with 100% Value Settlement Guarantee.",
+    "Test handcrafted luxury extraits on your skin. Order tester vials directly via WhatsApp for 1-on-1 assistance with 100% Value Settlement Guarantee.",
 };
 
-async function getTesterProducts(): Promise<Product[]> {
+export interface TesterOption {
+  id: string;
+  product_id: string;
+  size_ml: number;
+  price: number;
+  stock_quantity?: number;
+  is_active?: boolean;
+}
+
+async function getTesterData(): Promise<{ products: Product[]; testers: TesterOption[] }> {
   try {
     const supabase = await createClient();
-    const { data } = await supabase
-      .from("products")
-      .select("*, images:product_images(*), category:categories(*)")
-      .eq("is_published", true)
-      .eq("tester_available", true)
-      .order("name");
-    return (data as Product[]) ?? [];
+    const [prodRes, testerRes] = await Promise.all([
+      supabase
+        .from("products")
+        .select("*, images:product_images(*), category:categories(*)")
+        .eq("is_published", true)
+        .eq("tester_available", true)
+        .order("name"),
+      supabase
+        .from("tester_products")
+        .select("*")
+        .eq("is_active", true),
+    ]);
+    return {
+      products: (prodRes.data as Product[]) ?? [],
+      testers: (testerRes.data as TesterOption[]) ?? [],
+    };
   } catch {
-    return [];
+    return { products: [], testers: [] };
   }
 }
 
 export default async function TestersPage() {
-  const products = await getTesterProducts();
+  const { products, testers } = await getTesterData();
 
   return (
     <div style={{ background: "var(--color-bg)", minHeight: "100vh" }}>
@@ -35,14 +53,14 @@ export default async function TestersPage() {
         style={{
           background: "linear-gradient(180deg, #141414 0%, #1f1d1a 100%)",
           color: "#fff",
-          padding: "clamp(4.5rem, 8vw, 7rem) 0 clamp(3.5rem, 6vw, 5rem)",
+          padding: "clamp(4.5rem, 8vw, 6.5rem) 0 clamp(3.5rem, 6vw, 4.5rem)",
           textAlign: "center",
           position: "relative",
           overflow: "hidden",
           borderBottom: "1px solid rgba(255,255,255,0.08)",
         }}
       >
-        {/* Subtle Ambient Glow */}
+        {/* Ambient Glow */}
         <div
           style={{
             position: "absolute",
@@ -108,47 +126,54 @@ export default async function TestersPage() {
               fontWeight: 300,
             }}
           >
-            Perfume reacts uniquely with individual skin chemistry. Test wear our handcrafted artisanal extraits in miniature travel atomizers — with <strong style={{ color: "#e8c977", fontWeight: 600 }}>100% of your tester order value settled and credited</strong> toward your full bottle.
+            Perfume reacts uniquely with individual skin chemistry. Test wear our handcrafted artisanal extraits — order tester vials directly via WhatsApp with <strong style={{ color: "#e8c977", fontWeight: 600 }}>100% 1-on-1 personal assistance &amp; full bottle settlement credit</strong>.
           </p>
 
-          {/* Size Format Pills */}
+          {/* Real Feature Pills */}
           <div
             style={{
               display: "flex",
-              gap: "0.75rem",
+              gap: "0.875rem",
               justifyContent: "center",
               flexWrap: "wrap",
-              maxWidth: "680px",
+              maxWidth: "760px",
               margin: "0 auto",
             }}
           >
             {[
-              { size: "2ml Vial", price: "₹99", sprays: "~30 sprays" },
-              { size: "5ml Travel Spray", price: "₹199", sprays: "~75 sprays" },
-              { size: "10ml Pocket Atomizer", price: "₹349", sprays: "~150 sprays" },
-            ].map((item) => (
-              <div
-                key={item.size}
+              { icon: <MessageCircle size={15} color="#25D366" />, title: "WhatsApp Direct Order", desc: "Connect 1-on-1 with Suraj & team", href: "https://api.whatsapp.com/send?phone=917067697646&text=Hi%20ANGELIX!%20I%20want%20to%20order%20a%20Tester%20Vial." },
+              { icon: <ShieldCheck size={15} color="#d4af37" />, title: "100% Settle Credit", desc: "Deducted on full bottle purchase" },
+              { icon: <Sparkles size={15} color="#d4af37" />, title: "Real Tester Extraits", desc: "Authentic high-concentration oils" },
+            ].map((item, idx) => (
+              <a
+                key={idx}
+                href={item.href || "#"}
+                target={item.href ? "_blank" : undefined}
+                rel={item.href ? "noopener noreferrer" : undefined}
                 style={{
-                  padding: "0.75rem 1.25rem",
+                  padding: "0.85rem 1.4rem",
                   background: "rgba(255,255,255,0.04)",
                   border: "1px solid rgba(255,255,255,0.12)",
                   backdropFilter: "blur(10px)",
                   display: "flex",
-                  flexDirection: "column",
                   alignItems: "center",
-                  gap: "0.2rem",
-                  borderRadius: "2px",
-                  minWidth: "160px",
+                  gap: "0.75rem",
+                  borderRadius: "4px",
+                  textDecoration: "none",
+                  color: "inherit",
+                  cursor: item.href ? "pointer" : "default",
                 }}
               >
-                <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.82rem", fontWeight: 700, color: "#fff" }}>
-                  {item.size} — <span style={{ color: "#d4af37" }}>{item.price}</span>
-                </span>
-                <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.68rem", color: "rgba(255,255,255,0.45)" }}>
-                  {item.sprays} · 100% Settle Credit
-                </span>
-              </div>
+                {item.icon}
+                <div style={{ textAlign: "left" }}>
+                  <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.82rem", fontWeight: 700, color: "#fff" }}>
+                    {item.title}
+                  </p>
+                  <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.7rem", color: "rgba(255,255,255,0.5)" }}>
+                    {item.desc}
+                  </p>
+                </div>
+              </a>
             ))}
           </div>
         </div>
@@ -177,15 +202,15 @@ export default async function TestersPage() {
           }}
         >
           <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-            <ShieldCheck size={16} /> <strong>100% Tester Cash Settle:</strong> Deducted from your next full bottle
+            <MessageCircle size={16} /> <strong>Direct WhatsApp 1-on-1 Ordering:</strong> Instant personal assistance
+          </span>
+          <span className="hidden sm:inline" style={{ opacity: 0.5 }}>|</span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+            <ShieldCheck size={16} /> <strong>100% Tester Settle Credit:</strong> Deducted from your full bottle
           </span>
           <span className="hidden sm:inline" style={{ opacity: 0.5 }}>|</span>
           <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
             <Truck size={16} /> Free Priority Delivery on ₹1499+
-          </span>
-          <span className="hidden sm:inline" style={{ opacity: 0.5 }}>|</span>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-            <Sparkles size={16} /> Handcrafted in India
           </span>
         </div>
       </section>
@@ -193,7 +218,7 @@ export default async function TestersPage() {
       {/* ── Main Product Grid with Interactive Sorters & Filters ── */}
       <section className="section-py" style={{ paddingTop: "3.5rem" }}>
         <div className="container-site">
-          <TesterGrid products={products} />
+          <TesterGrid products={products} testerOptions={testers} />
         </div>
       </section>
 
@@ -208,13 +233,13 @@ export default async function TestersPage() {
       >
         <div className="container-site" style={{ textAlign: "center" }}>
           <p className="label-caps" style={{ color: "#8a6d3b", marginBottom: "0.75rem", fontWeight: 700 }}>
-            The Settlement Process
+            The WhatsApp Settlement Process
           </p>
           <h2
             className="heading-editorial"
             style={{ fontSize: "clamp(2rem, 4.5vw, 3.2rem)", marginBottom: "3rem" }}
           >
-            How Tester Settle Works
+            How 1-on-1 WhatsApp Tester Settle Works
           </h2>
 
           <div
@@ -230,23 +255,23 @@ export default async function TestersPage() {
             {[
               {
                 step: "01",
-                title: "Choose Sample Vials",
-                desc: "Select single 2ml, 5ml, or 10ml vials of the fragrances you are curious to explore.",
+                title: "Select Vials & Tap WhatsApp",
+                desc: "Choose your desired tester vial size and click 'Order via WhatsApp' to connect directly with us.",
               },
               {
                 step: "02",
-                title: "Test In Real Life",
-                desc: "Wear for 3–5 days in daily routines, evenings, and different temperatures to observe sillage and dry-down.",
+                title: "1-on-1 Personal Assistance",
+                desc: "We confirm your fragrance choices, answer notes questions, and complete your order details directly on WhatsApp.",
               },
               {
                 step: "03",
-                title: "Choose Your Signature",
-                desc: "Find the scent that speaks to your identity and makes an unforgettable impression.",
+                title: "Test In Real Life",
+                desc: "Wear for 3–5 days in daily routines, evenings, and different temperatures to observe sillage and dry-down on skin.",
               },
               {
                 step: "04",
-                title: "100% Settled at Checkout",
-                desc: "Order your 50ml or 100ml full bottle — your tester purchase amount is automatically deducted at checkout!",
+                title: "100% Settle Credit",
+                desc: "When ordering your full bottle, 100% of your tester purchase amount is credited and settled directly toward your purchase!",
               },
             ].map((item) => (
               <div
@@ -325,14 +350,14 @@ export default async function TestersPage() {
               marginBottom: "2.5rem",
             }}
           >
-            Discover our full-size 50ml and 100ml signature glass flacons crafted with high-concentration perfume oils.
+            Discover our full-size signature glass flacons crafted with high-concentration perfume oils.
           </p>
           <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
             <Link href="/shop" className="btn-primary" style={{ padding: "0.9rem 2.2rem" }}>
               Explore Full Bottles
             </Link>
             <Link href="/about" className="btn-outline" style={{ padding: "0.9rem 2.2rem" }}>
-              Our Story & Philosophy
+              Our Story &amp; Philosophy
             </Link>
           </div>
         </div>
