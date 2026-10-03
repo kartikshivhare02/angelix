@@ -59,6 +59,7 @@ export default function AdminOrderDetailPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [newStatus, setNewStatus] = useState("");
+  const [newPaymentStatus, setNewPaymentStatus] = useState("");
   const [shipping, setShipping] = useState({ courier_name: "", tracking_number: "", tracking_url: "", estimated_delivery: "" });
 
   useEffect(() => {
@@ -68,6 +69,7 @@ export default function AdminOrderDetailPage() {
         if (d.order) {
           setOrder(d.order);
           setNewStatus(d.order.status);
+          setNewPaymentStatus(d.order.payment_status || "pending");
           setShipping({
             courier_name: d.order.courier_name ?? "",
             tracking_number: d.order.tracking_number ?? "",
@@ -82,7 +84,7 @@ export default function AdminOrderDetailPage() {
   const saveStatus = async () => {
     setSaving(true);
     try {
-      const body: Record<string, string> = { status: newStatus };
+      const body: Record<string, string> = { status: newStatus, payment_status: newPaymentStatus };
       if (newStatus === "shipped" || newStatus === "out_for_delivery") {
         Object.assign(body, shipping);
       }
@@ -223,6 +225,21 @@ export default function AdminOrderDetailPage() {
                   {STATUS_OPTIONS.map((s) => (
                     <option key={s.value} value={s.value}>{s.label}</option>
                   ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontFamily: "var(--font-sans)", fontSize: "0.72rem", fontWeight: 600, color: "#999", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "0.4rem" }}>Payment Status</label>
+                <select
+                  value={newPaymentStatus}
+                  onChange={(e) => setNewPaymentStatus(e.target.value)}
+                  className="input-base"
+                  style={{ width: "100%" }}
+                >
+                  <option value="pending">Pending</option>
+                  <option value="paid">Paid (Confirmed)</option>
+                  <option value="failed">Failed</option>
+                  <option value="refunded">Refunded</option>
                 </select>
               </div>
 

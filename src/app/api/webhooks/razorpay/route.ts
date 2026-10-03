@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 
 // Razorpay sends a POST to this endpoint with payment event data.
 // We verify the webhook signature and update order payment status.
@@ -46,10 +46,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ status: "ignored" });
   }
 
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
 
-  // Handle payment.captured (successful payment)
-  if (event === "payment.captured") {
+  // Handle payment.captured or order.paid (successful payment)
+  if (event === "payment.captured" || event === "order.paid") {
     const { data: order } = await supabase
       .from("orders")
       .select("id, payment_status")
