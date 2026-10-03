@@ -7,23 +7,22 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  CheckCircle2,
-  MapPin,
-  CreditCard,
   ShoppingBag,
-  ArrowRight,
   ShieldCheck,
   Truck,
-  RotateCcw,
   Sparkles,
   Lock,
-  ChevronRight,
   ChevronDown,
   ChevronUp,
   Loader2,
-  Edit2,
   Check,
-  Tag
+  Tag,
+  ArrowRight,
+  Phone,
+  Mail,
+  MapPin,
+  CreditCard,
+  CheckCircle2,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -33,6 +32,15 @@ declare global {
   }
 }
 
+const labelStyle: React.CSSProperties = {
+  display: "block",
+  fontFamily: "var(--font-sans)",
+  fontSize: "0.76rem",
+  fontWeight: 600,
+  color: "#475569",
+  marginBottom: "0.4rem",
+};
+
 export default function CheckoutPage() {
   const { items, totalPrice, clearCart } = useCart();
   const router = useRouter();
@@ -41,10 +49,7 @@ export default function CheckoutPage() {
   const [user, setUser] = useState<any>(null);
   const [authChecking, setAuthChecking] = useState(true);
 
-  // Multi-step state: 1 = Address, 2 = Payment Method, 3 = Review & Place
-  const [step, setStep] = useState<1 | 2 | 3>(1);
-
-  // Mobile Order Summary Drawer Toggle
+  // Mobile Order Summary Accordion State
   const [mobileSummaryOpen, setMobileSummaryOpen] = useState(false);
 
   // Address Form State
@@ -77,7 +82,7 @@ export default function CheckoutPage() {
   const [couponApplied, setCouponApplied] = useState("");
   const [couponLoading, setCouponLoading] = useState(false);
 
-  // Tester Credit State (100% Value Settle Guarantee)
+  // Tester Credit State
   const [testerCreditQuery, setTesterCreditQuery] = useState("");
   const [testerDiscount, setTesterDiscount] = useState(0);
   const [testerAppliedOrder, setTesterAppliedOrder] = useState("");
@@ -87,7 +92,7 @@ export default function CheckoutPage() {
   // Placing State
   const [placing, setPlacing] = useState(false);
 
-  // 1. Verify User Login on mount
+  // 1. Verify User Login on mount & pre-fill address
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -101,7 +106,6 @@ export default function CheckoutPage() {
           phone: user.user_metadata?.phone || prev.phone,
         }));
 
-        // Automatically pre-check for any previous tester purchases by email
         if (user.email) {
           fetch("/api/testers/validate-credit", {
             method: "POST",
@@ -118,7 +122,7 @@ export default function CheckoutPage() {
                 setTesterDiscount(res.credit_amount);
                 setTesterAppliedOrder(res.order_number || user.email || "");
                 setTesterMessage(res.message);
-                toast.success(`🎉 Previous Tester Settle Detected: -${formatPrice(res.credit_amount)}`);
+                toast.success(`🎉 Tester Credit Detected: -${formatPrice(res.credit_amount)}`);
               }
             })
             .catch(() => {});
@@ -128,14 +132,14 @@ export default function CheckoutPage() {
     });
   }, [items]);
 
-  // 2. Indian Postal Pincode API Integration
+  // 2. Indian Postal Pincode Lookup API
   const handlePincodeChange = async (pin: string) => {
     const cleanPin = pin.replace(/\D/g, "").slice(0, 6);
     setForm((prev) => ({ ...prev, pincode: cleanPin }));
 
     if (cleanPin.length === 6) {
       setPincodeLoading(true);
-      setPincodeStatus("Looking up pincode...");
+      setPincodeStatus("Looking up location...");
       try {
         const res = await fetch(`https://api.postalpincode.in/pincode/${cleanPin}`);
         const data = await res.json();
@@ -151,7 +155,7 @@ export default function CheckoutPage() {
             state: detectedState,
           }));
 
-          setPincodeStatus(`✓ Delivery available in ${detectedCity}, ${detectedState}`);
+          setPincodeStatus(`✓ Serviceable: ${detectedCity}, ${detectedState}`);
           toast.success(`Location detected: ${detectedCity}, ${detectedState}`);
         } else {
           setPincodeStatus("⚠️ Invalid Indian PIN Code.");
@@ -168,8 +172,8 @@ export default function CheckoutPage() {
   };
 
   const subtotal = totalPrice();
-  const shipping = subtotal >= 1499 ? 0 : 99;
-  const total = Math.max(0, subtotal - discount - testerDiscount + shipping);
+  const shippingCost = subtotal >= 1499 ? 0 : 99;
+  const total = Math.max(0, subtotal - discount - testerDiscount + shippingCost);
 
   const applyCoupon = async () => {
     if (!coupon.trim()) return;
@@ -198,7 +202,7 @@ export default function CheckoutPage() {
   const applyTesterCredit = async (queryVal?: string) => {
     const q = (queryVal || testerCreditQuery).trim();
     if (!q) {
-      toast.error("Please enter your Tester Order Number, Email, or Phone.");
+      toast.error("Please enter your Tester Order #, Phone, or Email.");
       return;
     }
     setTesterLoading(true);
@@ -235,8 +239,8 @@ export default function CheckoutPage() {
     toast.info("Tester credit removed.");
   };
 
-  // Step 1 Validation
-  const validateStep1 = () => {
+  // Form Validation
+  const validateForm = () => {
     if (!form.first_name.trim()) { toast.error("Please enter your first name."); return false; }
     if (!form.last_name.trim()) { toast.error("Please enter your last name."); return false; }
     if (!form.phone.trim() || form.phone.replace(/\D/g, "").length < 10) {
@@ -252,37 +256,21 @@ export default function CheckoutPage() {
       return false;
     }
     if (!form.address1.trim() || form.address1.trim().length < 4) {
-      toast.error("Please enter complete street address / building name.");
+      toast.error("Please enter complete house/flat no. and street address.");
       return false;
     }
     if (!form.city.trim() || !form.state.trim()) {
-      toast.error("City and state are required.");
+      toast.error("City and State are required.");
       return false;
     }
     return true;
   };
 
-  const goToStep2 = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (validateStep1()) {
-      setStep(2);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
-
-  const goToStep3 = () => {
-    setStep(3);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
+  // Place Order Handler
   const handlePlaceOrder = async () => {
-    if (!validateStep1()) {
-      setStep(1);
-      return;
-    }
-
+    if (!validateForm()) return;
     if (items.length === 0) {
-      toast.error("Your cart is empty.");
+      toast.error("Your shopping bag is empty.");
       return;
     }
 
@@ -312,7 +300,7 @@ export default function CheckoutPage() {
         return;
       }
 
-      // COD Order or Direct Creation
+      // COD Order Confirmation
       if (data.payment_method === "cod" || !data.razorpay_order_id) {
         clearCart();
         toast.success("Order confirmed successfully!", { id: toastId });
@@ -320,7 +308,7 @@ export default function CheckoutPage() {
         return;
       }
 
-      // Razorpay Online Payment Gateway
+      // Razorpay Online Gateway
       toast.dismiss(toastId);
       const script = document.createElement("script");
       script.src = "https://checkout.razorpay.com/v1/checkout.js";
@@ -353,14 +341,11 @@ export default function CheckoutPage() {
                 }),
               });
               const verifyData = await verifyRes.json();
+              clearCart();
               if (verifyData.success) {
-                clearCart();
                 toast.success("Payment verified! Order placed.");
-                router.push(`/order-confirmation/${data.order_id}`);
-              } else {
-                clearCart();
-                router.push(`/order-confirmation/${data.order_id}`);
               }
+              router.push(`/order-confirmation/${data.order_id}`);
             } catch {
               clearCart();
               router.push(`/order-confirmation/${data.order_id}`);
@@ -369,7 +354,7 @@ export default function CheckoutPage() {
           modal: {
             ondismiss: function () {
               setPlacing(false);
-              toast.info("Payment cancelled. You can retry or choose COD.");
+              toast.info("Payment cancelled. You can retry or select Cash on Delivery.");
             },
           },
         };
@@ -377,7 +362,7 @@ export default function CheckoutPage() {
         rzp.open();
       };
       script.onerror = () => {
-        toast.error("Failed to load gateway. Order placed as COD.");
+        toast.error("Failed to load gateway. Order recorded.");
         clearCart();
         router.push(`/order-confirmation/${data.order_id}`);
       };
@@ -391,12 +376,7 @@ export default function CheckoutPage() {
   if (authChecking) {
     return (
       <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ textAlign: "center" }}>
-          <Loader2 size={32} className="animate-spin" style={{ margin: "0 auto 1rem", color: "#111" }} />
-          <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.9rem", color: "#888" }}>
-            Preparing checkout...
-          </p>
-        </div>
+        <Loader2 size={32} className="animate-spin" style={{ color: "#111" }} />
       </div>
     );
   }
@@ -419,8 +399,60 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="container-site section-py checkout-page-root" style={{ maxWidth: "1100px", paddingBottom: "6rem" }}>
-      {/* ── Mobile Order Summary Accordion (Shopify Style) ── */}
+    <div className="container-site section-py" style={{ maxWidth: "1080px", paddingBottom: "7rem" }}>
+      {/* ── Top Header ── */}
+      <div style={{ marginBottom: "2rem", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "1rem" }}>
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.35rem" }}>
+            <ShieldCheck size={16} color="#27ae60" />
+            <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#27ae60" }}>
+              256-Bit SSL Encrypted Express Checkout
+            </span>
+          </div>
+          <h1 className="heading-editorial" style={{ fontSize: "clamp(1.8rem, 4vw, 2.4rem)", lineHeight: 1.15 }}>
+            Checkout
+          </h1>
+        </div>
+
+        {!user && (
+          <button
+            type="button"
+            onClick={() => {
+              const supabase = createClient();
+              supabase.auth.signInWithOAuth({
+                provider: "google",
+                options: {
+                  redirectTo: `${window.location.origin}/auth/callback?next=/checkout`,
+                },
+              });
+            }}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              background: "#fff",
+              border: "1px solid #ccc",
+              padding: "0.5rem 0.9rem",
+              borderRadius: "4px",
+              fontSize: "0.78rem",
+              fontWeight: 600,
+              cursor: "pointer",
+              color: "#111",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+            }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+              <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"/>
+              <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.98 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+              <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+            </svg>
+            <span>1-Click Google Autofill</span>
+          </button>
+        )}
+      </div>
+
+      {/* ── Mobile Expandable Order Summary ── */}
       <div className="checkout-mobile-summary-card">
         <button
           type="button"
@@ -430,115 +462,57 @@ export default function CheckoutPage() {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            background: "#fcfcfc",
-            border: "1px solid #e5e5e5",
+            background: "#fdfdfd",
+            border: "1px solid #e0e0e0",
             padding: "0.85rem 1rem",
+            borderRadius: "6px",
             cursor: "pointer",
-            marginBottom: "1rem",
+            marginBottom: "1.25rem",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
             <ShoppingBag size={16} color="#111" />
-            <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.82rem", fontWeight: 600, color: "#111" }}>
-              {mobileSummaryOpen ? "Hide" : "Show"} Order Summary ({items.reduce((s, i) => s + i.quantity, 0)} items)
+            <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem", fontWeight: 600, color: "#111" }}>
+              {mobileSummaryOpen ? "Hide" : "Show"} Summary ({items.reduce((s, i) => s + i.quantity, 0)} items)
             </span>
-            {mobileSummaryOpen ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+            {mobileSummaryOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </div>
-          <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.95rem", fontWeight: 700, color: "#111" }}>
+          <span style={{ fontFamily: "var(--font-sans)", fontSize: "1rem", fontWeight: 700, color: "#111" }}>
             {formatPrice(total)}
           </span>
         </button>
 
         {mobileSummaryOpen && (
-          <div style={{ background: "#fafafa", border: "1px solid #eee", padding: "1.25rem", marginBottom: "1.5rem", borderRadius: "2px" }}>
-            {/* Products */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginBottom: "1rem" }}>
+          <div style={{ background: "#fafafa", border: "1px solid #e5e5e5", padding: "1.25rem", borderRadius: "6px", marginBottom: "1.5rem" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem", marginBottom: "1.25rem" }}>
               {items.map((item) => (
                 <div key={item.product_id} style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                  <div style={{ width: "42px", height: "52px", background: "#fff", border: "1px solid #ddd", flexShrink: 0, overflow: "hidden", position: "relative" }}>
+                  <div style={{ width: "42px", height: "52px", background: "#fff", border: "1px solid #ddd", flexShrink: 0, overflow: "hidden", position: "relative", borderRadius: "3px" }}>
                     {item.image_url ? (
                       <img src={item.image_url} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     ) : (
                       <div style={{ display: "flex", height: "100%", alignItems: "center", justifyContent: "center", fontSize: "0.6rem" }}>ANG</div>
                     )}
-                    <span style={{ position: "absolute", top: -2, right: -2, background: "#111", color: "#fff", fontSize: "0.6rem", width: "16px", height: "16px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <span style={{ position: "absolute", top: -2, right: -2, background: "#111", color: "#fff", fontSize: "0.6rem", width: "16px", height: "16px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}>
                       {item.quantity}
                     </span>
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.82rem", fontWeight: 600, color: "#111", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem", fontWeight: 600, color: "#111", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                       {item.name}
                     </p>
-                    <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.72rem", color: "#888" }}>
+                    <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.75rem", color: "#666" }}>
                       {formatProductSize(item.volume_ml, item)} · Qty: {item.quantity}
                     </p>
                   </div>
-                  <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem", fontWeight: 700 }}>
+                  <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.88rem", fontWeight: 700 }}>
                     {formatPrice(item.price * item.quantity)}
                   </span>
                 </div>
               ))}
             </div>
 
-            {/* Coupon input */}
-            <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.75rem" }}>
-              <input
-                type="text"
-                placeholder="Discount code"
-                value={coupon}
-                onChange={(e) => setCoupon(e.target.value.toUpperCase())}
-                style={{ flex: 1, padding: "0.55rem 0.75rem", border: "1px solid #ccc", fontSize: "0.8rem", textTransform: "uppercase" }}
-              />
-              <button
-                type="button"
-                onClick={applyCoupon}
-                disabled={couponLoading}
-                className="btn-primary"
-                style={{ padding: "0.55rem 1rem", fontSize: "0.75rem" }}
-              >
-                {couponLoading ? "..." : "Apply"}
-              </button>
-            </div>
-
-            {/* Tester 100% Value Settlement Card */}
-            <div style={{ background: "#fbf8f2", border: "1px solid #ebdcc5", padding: "0.75rem", borderRadius: "2px", marginBottom: "1rem" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.4rem" }}>
-                <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.72rem", fontWeight: 700, color: "#8a6d3b", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                  🧪 100% Tester Value Settle
-                </span>
-                {testerDiscount > 0 && (
-                  <button type="button" onClick={removeTesterCredit} style={{ background: "none", border: "none", color: "#c0392b", fontSize: "0.68rem", cursor: "pointer" }}>
-                    Remove
-                  </button>
-                )}
-              </div>
-              {testerDiscount > 0 ? (
-                <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.75rem", color: "#27ae60", fontWeight: 600 }}>
-                  ✓ {testerMessage || `Tester value of ${formatPrice(testerDiscount)} deducted!`}
-                </p>
-              ) : (
-                <div style={{ display: "flex", gap: "0.4rem" }}>
-                  <input
-                    type="text"
-                    placeholder="Tester Order # / Phone / Email"
-                    value={testerCreditQuery}
-                    onChange={(e) => setTesterCreditQuery(e.target.value)}
-                    style={{ flex: 1, padding: "0.45rem 0.6rem", border: "1px solid #ebdcc5", fontSize: "0.75rem", background: "#fff" }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => applyTesterCredit()}
-                    disabled={testerLoading}
-                    style={{ padding: "0.45rem 0.75rem", background: "#8a6d3b", color: "#fff", border: "none", fontSize: "0.72rem", fontWeight: 600, cursor: "pointer" }}
-                  >
-                    {testerLoading ? "..." : "Redeem"}
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Price lines */}
-            <div style={{ borderTop: "1px solid #eee", paddingTop: "0.75rem", display: "flex", flexDirection: "column", gap: "0.4rem", fontSize: "0.82rem" }}>
+            <div style={{ borderTop: "1px solid #e0e0e0", paddingTop: "0.85rem", display: "flex", flexDirection: "column", gap: "0.45rem", fontSize: "0.85rem" }}>
               <div style={{ display: "flex", justifyContent: "space-between", color: "#666" }}>
                 <span>Subtotal</span>
                 <span>{formatPrice(subtotal)}</span>
@@ -557,9 +531,9 @@ export default function CheckoutPage() {
               )}
               <div style={{ display: "flex", justifyContent: "space-between", color: "#666" }}>
                 <span>Shipping</span>
-                <span>{shipping === 0 ? <strong style={{ color: "#27ae60" }}>FREE</strong> : formatPrice(shipping)}</span>
+                <span>{shippingCost === 0 ? <strong style={{ color: "#27ae60" }}>FREE</strong> : formatPrice(shippingCost)}</span>
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, fontSize: "1rem", color: "#111", borderTop: "1px solid #eee", paddingTop: "0.5rem" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, fontSize: "1.05rem", color: "#111", borderTop: "1px solid #ddd", paddingTop: "0.6rem", marginTop: "0.25rem" }}>
                 <span>Total to Pay</span>
                 <span>{formatPrice(total)}</span>
               </div>
@@ -568,527 +542,360 @@ export default function CheckoutPage() {
         )}
       </div>
 
-      {/* ── Checkout Progress Header ── */}
-      <div style={{ marginBottom: "2rem" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.4rem" }}>
-          <ShieldCheck size={16} color="#27ae60" />
-          <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#27ae60" }}>
-            256-Bit SSL Encrypted Checkout
-          </p>
-        </div>
-        <h1 className="heading-editorial" style={{ fontSize: "clamp(1.7rem, 4vw, 2.3rem)", lineHeight: 1.15 }}>
-          Delivery & Payment
-        </h1>
-
-        {/* Step Progress Pill Indicator */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.4rem", marginTop: "1.25rem" }}>
-          {[
-            { num: 1, label: "Address", icon: MapPin },
-            { num: 2, label: "Payment", icon: CreditCard },
-            { num: 3, label: "Review", icon: CheckCircle2 },
-          ].map((s) => {
-            const isCurrent = step === s.num;
-            const isDone = step > s.num;
-            return (
-              <div
-                key={s.num}
-                onClick={() => isDone && setStep(s.num as any)}
-                style={{
-                  padding: "0.65rem 0.5rem",
-                  background: isCurrent ? "#111" : isDone ? "#f0fdf4" : "#fafafa",
-                  color: isCurrent ? "#fff" : isDone ? "#166534" : "#888",
-                  border: isCurrent ? "1px solid #111" : isDone ? "1px solid #bbf7d0" : "1px solid #eee",
-                  borderRadius: "3px",
-                  cursor: isDone ? "pointer" : "default",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "0.4rem",
-                  textAlign: "center",
-                }}
-              >
-                <s.icon size={14} color={isCurrent ? "#fff" : isDone ? "#166534" : "#888"} />
-                <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.75rem", fontWeight: isCurrent ? 700 : 600 }}>
-                  {s.num}. {s.label}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
+      {/* ── Main Layout Grid ── */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: "2rem", alignItems: "flex-start" }} className="checkout-main-grid">
-        {/* ── Left Column: Step-by-Step Flow ── */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-          {/* ════════════ STEP 1: Indian Address ════════════ */}
-          <div style={{ background: "#fff", border: "1px solid #e5e5e5", padding: "clamp(1.25rem, 3vw, 2rem)", borderRadius: "2px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem", paddingBottom: "0.6rem", borderBottom: "1px solid #f0f0f0" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <span style={{ width: "22px", height: "22px", borderRadius: "50%", background: step === 1 ? "#111" : "#166534", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.7rem", fontWeight: 700 }}>
-                  {step > 1 ? "✓" : "1"}
-                </span>
-                <h2 style={{ fontFamily: "var(--font-sans)", fontSize: "0.95rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                  Delivery Address & Contact
-                </h2>
-              </div>
-              {step > 1 && (
-                <button
-                  type="button"
-                  onClick={() => setStep(1)}
-                  style={{ background: "none", border: "none", color: "#111", fontSize: "0.75rem", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: "0.25rem" }}
-                >
-                  <Edit2 size={12} /> Edit
-                </button>
-              )}
-            </div>
-
-            {step === 1 ? (
-              <form onSubmit={goToStep2} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                {/* ── Guest Quick Google Sign In Banner ── */}
-                {!user && (
-                  <div
-                    style={{
-                      background: "linear-gradient(135deg, #FAF9F7 0%, #F4F0E8 100%)",
-                      border: "1px solid #E8E5DF",
-                      padding: "0.85rem 1rem",
-                      borderRadius: "3px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      gap: "0.75rem",
-                      flexWrap: "wrap",
-                      marginBottom: "0.5rem",
-                    }}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                      <Sparkles size={16} color="#111" />
-                      <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.78rem", color: "#333", fontWeight: 500 }}>
-                        Have an account or want 1-click autofill?
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const supabase = createClient();
-                        supabase.auth.signInWithOAuth({
-                          provider: "google",
-                          options: {
-                            redirectTo: `${window.location.origin}/auth/callback?next=/checkout`,
-                          },
-                        });
-                      }}
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "0.45rem",
-                        background: "#fff",
-                        border: "1px solid #ddd",
-                        padding: "0.45rem 0.85rem",
-                        fontSize: "0.75rem",
-                        fontWeight: 600,
-                        cursor: "pointer",
-                        borderRadius: "2px",
-                        color: "#111",
-                        boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
-                      }}
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
-                        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"/>
-                        <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.98 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
-                        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
-                      </svg>
-                      <span>Sign in with Google</span>
-                    </button>
-                  </div>
-                )}
-                {/* Name */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
-                  <div>
-                    <label style={labelStyle}>First Name *</label>
-                    <input
-                      className="input-base"
-                      value={form.first_name}
-                      onChange={(e) => setForm({ ...form, first_name: e.target.value })}
-                      placeholder="e.g. Rahul"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Last Name *</label>
-                    <input
-                      className="input-base"
-                      value={form.last_name}
-                      onChange={(e) => setForm({ ...form, last_name: e.target.value })}
-                      placeholder="e.g. Sharma"
-                      required
-                    />
-                  </div>
-                </div>
-
-                {/* Email & Phone */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }} className="checkout-two-input-grid">
-                  <div>
-                    <label style={labelStyle}>Email (for order & invoice) *</label>
-                    <input
-                      type="email"
-                      className="input-base"
-                      value={form.email}
-                      onChange={(e) => setForm({ ...form, email: e.target.value })}
-                      placeholder="rahul@gmail.com"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Phone (10-Digit Mobile) *</label>
-                    <div style={{ display: "flex" }}>
-                      <span style={{ padding: "0.65rem 0.6rem", background: "#f5f5f5", border: "1px solid #ccc", borderRight: "none", fontSize: "0.82rem", fontWeight: 600, color: "#666" }}>
-                        +91
-                      </span>
-                      <input
-                        type="tel"
-                        inputMode="numeric"
-                        className="input-base"
-                        value={form.phone}
-                        onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, "").slice(0, 10) })}
-                        placeholder="9876543210"
-                        maxLength={10}
-                        required
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* WhatsApp Opt-in */}
-                <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer", background: "#f0fdf4", padding: "0.6rem 0.75rem", border: "1px solid #bbf7d0", borderRadius: "2px" }}>
-                  <input
-                    type="checkbox"
-                    checked={form.whatsapp_same}
-                    onChange={(e) => setForm({ ...form, whatsapp_same: e.target.checked })}
-                  />
-                  <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.75rem", color: "#166534", fontWeight: 500 }}>
-                    Send shipping tracking & dispatch alerts to this WhatsApp number
-                  </span>
-                </label>
-
-                {/* PIN Code Lookup with Indian Postal API */}
-                <div style={{ background: "#fafafa", padding: "1rem", border: "1px solid #eee", borderRadius: "2px" }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "130px 1fr 1fr", gap: "0.75rem" }} className="checkout-pincode-grid">
-                    <div>
-                      <label style={labelStyle}>PIN Code *</label>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        className="input-base"
-                        value={form.pincode}
-                        onChange={(e) => handlePincodeChange(e.target.value)}
-                        placeholder="110001"
-                        maxLength={6}
-                        required
-                        style={{ fontWeight: 700, letterSpacing: "0.08em" }}
-                      />
-                    </div>
-                    <div>
-                      <label style={labelStyle}>City / District *</label>
-                      <input
-                        className="input-base"
-                        value={form.city}
-                        onChange={(e) => setForm({ ...form, city: e.target.value })}
-                        placeholder="City"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label style={labelStyle}>State *</label>
-                      <input
-                        className="input-base"
-                        value={form.state}
-                        onChange={(e) => setForm({ ...form, state: e.target.value })}
-                        placeholder="State"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  {pincodeStatus && (
-                    <p
-                      style={{
-                        fontFamily: "var(--font-sans)",
-                        fontSize: "0.72rem",
-                        fontWeight: 600,
-                        marginTop: "0.5rem",
-                        color: pincodeStatus.startsWith("✓") ? "#166534" : pincodeStatus.startsWith("⚠️") ? "#c0392b" : "#666",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "0.3rem",
-                      }}
-                    >
-                      {pincodeLoading && <Loader2 size={12} className="animate-spin" />}
-                      {pincodeStatus}
-                    </p>
-                  )}
-                </div>
-
-                {/* Street Address */}
-                <div>
-                  <label style={labelStyle}>House / Flat No., Building, Street Address *</label>
-                  <input
-                    className="input-base"
-                    value={form.address1}
-                    onChange={(e) => setForm({ ...form, address1: e.target.value })}
-                    placeholder="e.g. Flat 302, Green Avenue, MG Road"
-                    required
-                  />
-                </div>
-
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
-                  <div>
-                    <label style={labelStyle}>Area / Colony</label>
-                    <input
-                      className="input-base"
-                      value={form.address2}
-                      onChange={(e) => setForm({ ...form, address2: e.target.value })}
-                      placeholder="e.g. Sector 14"
-                    />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Landmark (Optional)</label>
-                    <input
-                      className="input-base"
-                      value={form.landmark}
-                      onChange={(e) => setForm({ ...form, landmark: e.target.value })}
-                      placeholder="e.g. Near HDFC Bank"
-                    />
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  className="btn-primary"
-                  style={{ width: "100%", justifyContent: "center", padding: "0.9rem", marginTop: "0.4rem", fontSize: "0.88rem" }}
-                >
-                  <span>Proceed to Payment</span>
-                  <ArrowRight size={16} />
-                </button>
-              </form>
-            ) : (
-              <div style={{ fontSize: "0.82rem", color: "#555", lineHeight: 1.6 }}>
-                <p style={{ fontWeight: 700, color: "#111" }}>{form.first_name} {form.last_name}</p>
-                <p>{form.address1}{form.address2 ? `, ${form.address2}` : ""}{form.landmark ? ` (Landmark: ${form.landmark})` : ""}</p>
-                <p>{form.city}, {form.state} — <strong>{form.pincode}</strong></p>
-                <p style={{ color: "#888", fontSize: "0.75rem" }}>Phone: +91 {form.phone} · Email: {form.email}</p>
-              </div>
-            )}
-          </div>
-
-          {/* ════════════ STEP 2: Payment Method ════════════ */}
-          <div style={{ background: "#fff", border: "1px solid #e5e5e5", padding: "clamp(1.25rem, 3vw, 2rem)", borderRadius: "2px", opacity: step < 2 ? 0.6 : 1 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem", paddingBottom: "0.6rem", borderBottom: "1px solid #f0f0f0" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <span style={{ width: "22px", height: "22px", borderRadius: "50%", background: step === 2 ? "#111" : step > 2 ? "#166534" : "#eee", color: step === 2 || step > 2 ? "#fff" : "#999", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.7rem", fontWeight: 700 }}>
-                  {step > 2 ? "✓" : "2"}
-                </span>
-                <h2 style={{ fontFamily: "var(--font-sans)", fontSize: "0.95rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                  Select Payment Method
-                </h2>
-              </div>
-              {step > 2 && (
-                <button
-                  type="button"
-                  onClick={() => setStep(2)}
-                  style={{ background: "none", border: "none", color: "#111", fontSize: "0.75rem", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: "0.25rem" }}
-                >
-                  <Edit2 size={12} /> Change
-                </button>
-              )}
-            </div>
-
-            {step === 2 && (
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
-                {/* Razorpay Online */}
-                <label
-                  onClick={() => setPaymentMethod("razorpay")}
-                  style={{
-                    display: "flex",
-                    alignItems: "flex-start",
-                    gap: "0.85rem",
-                    padding: "1.1rem",
-                    border: paymentMethod === "razorpay" ? "2px solid #111" : "1px solid #ddd",
-                    background: paymentMethod === "razorpay" ? "#fbfbfb" : "#fff",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                    transition: "all 0.15s",
-                  }}
-                >
-                  <input
-                    type="radio"
-                    name="payment"
-                    checked={paymentMethod === "razorpay"}
-                    onChange={() => setPaymentMethod("razorpay")}
-                    style={{ marginTop: "0.25rem" }}
-                  />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
-                      <span style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: "0.92rem", color: "#111" }}>
-                        ⚡ Online Payment (UPI, GPay, PhonePe, Cards)
-                      </span>
-                      <span style={{ padding: "0.15rem 0.4rem", background: "#e8f5e9", color: "#2e7d32", fontSize: "0.65rem", fontWeight: 700, borderRadius: "2px" }}>
-                        Fastest Dispatch
-                      </span>
-                    </div>
-                    <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.75rem", color: "#666", marginTop: "0.3rem", lineHeight: 1.4 }}>
-                      Instant secure payment via UPI, Google Pay, PhonePe, Paytm, Debit/Credit Cards & NetBanking.
-                    </p>
-                  </div>
-                </label>
-
-                {/* Cash on Delivery */}
-                <label
-                  onClick={() => setPaymentMethod("cod")}
-                  style={{
-                    display: "flex",
-                    alignItems: "flex-start",
-                    gap: "0.85rem",
-                    padding: "1.1rem",
-                    border: paymentMethod === "cod" ? "2px solid #111" : "1px solid #ddd",
-                    background: paymentMethod === "cod" ? "#fbfbfb" : "#fff",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                    transition: "all 0.15s",
-                  }}
-                >
-                  <input
-                    type="radio"
-                    name="payment"
-                    checked={paymentMethod === "cod"}
-                    onChange={() => setPaymentMethod("cod")}
-                    style={{ marginTop: "0.25rem" }}
-                  />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                      <span style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: "0.92rem", color: "#111" }}>
-                        💵 Cash on Delivery (COD)
-                      </span>
-                    </div>
-                    <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.75rem", color: "#666", marginTop: "0.3rem", lineHeight: 1.4 }}>
-                      Pay with cash or UPI directly to the courier agent when your package arrives.
-                    </p>
-                  </div>
-                </label>
-
-                <button
-                  type="button"
-                  onClick={goToStep3}
-                  className="btn-primary"
-                  style={{ width: "100%", justifyContent: "center", padding: "0.9rem", marginTop: "0.5rem", fontSize: "0.88rem" }}
-                >
-                  <span>Review & Finalize Order</span>
-                  <ArrowRight size={16} />
-                </button>
-              </div>
-            )}
-
-            {step > 2 && (
-              <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.82rem", color: "#222", fontWeight: 600 }}>
-                {paymentMethod === "razorpay" ? "⚡ Online Payment (UPI, Cards, NetBanking)" : "💵 Cash on Delivery (COD)"}
-              </p>
-            )}
-          </div>
-
-          {/* ════════════ STEP 3: Final Review & Confirmation ════════════ */}
-          <div style={{ background: "#fff", border: "1px solid #e5e5e5", padding: "clamp(1.25rem, 3vw, 2rem)", borderRadius: "2px", opacity: step < 3 ? 0.6 : 1 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1.25rem", paddingBottom: "0.6rem", borderBottom: "1px solid #f0f0f0" }}>
-              <span style={{ width: "22px", height: "22px", borderRadius: "50%", background: step === 3 ? "#111" : "#eee", color: step === 3 ? "#fff" : "#999", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.7rem", fontWeight: 700 }}>
-                3
+        
+        {/* ── Left Column: Form & Payment Selection ── */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+          
+          {/* Card 1: Delivery Details */}
+          <div style={{ background: "#fff", border: "1px solid #e2e8f0", padding: "clamp(1.25rem, 3vw, 2rem)", borderRadius: "8px", boxShadow: "0 1px 3px rgba(0,0,0,0.02)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1.5rem", paddingBottom: "0.75rem", borderBottom: "1px solid #f1f5f9" }}>
+              <span style={{ width: "24px", height: "24px", borderRadius: "50%", background: "#111", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.75rem", fontWeight: 700 }}>
+                1
               </span>
-              <h2 style={{ fontFamily: "var(--font-sans)", fontSize: "0.95rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                Review & Confirm Dispatch
+              <h2 style={{ fontFamily: "var(--font-sans)", fontSize: "1rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "#0f172a" }}>
+                Shipping Address & Contact
               </h2>
             </div>
 
-            {step === 3 && (
-              <div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem", marginBottom: "1.5rem" }}>
-                  {items.map((item) => (
-                    <div key={item.product_id} style={{ display: "flex", alignItems: "center", gap: "0.85rem", paddingBottom: "0.75rem", borderBottom: "1px solid #f5f5f5" }}>
-                      <div style={{ width: "46px", height: "56px", background: "#f5f5f5", overflow: "hidden", border: "1px solid #eee", flexShrink: 0 }}>
-                        {item.image_url ? (
-                          <img src={item.image_url} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                        ) : (
-                          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#bbb", fontSize: "0.6rem" }}>ANG</div>
-                        )}
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: "0.85rem" }}>{item.name}</p>
-                        <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.72rem", color: "#888" }}>
-                          {formatProductSize(item.volume_ml, item)} · Qty: {item.quantity}
-                        </p>
-                      </div>
-                      <p style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: "0.88rem" }}>
-                        {formatPrice(item.price * item.quantity)}
-                      </p>
-                    </div>
-                  ))}
+            <div style={{ display: "flex", flexDirection: "column", gap: "1.1rem" }}>
+              {/* Name Row */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.85rem" }} className="checkout-mobile-stack">
+                <div>
+                  <label style={labelStyle}>First Name *</label>
+                  <input
+                    type="text"
+                    className="checkout-input-field"
+                    value={form.first_name}
+                    onChange={(e) => setForm({ ...form, first_name: e.target.value })}
+                    placeholder="e.g. Rahul"
+                    required
+                  />
+                </div>
+                <div>
+                  <label style={labelStyle}>Last Name *</label>
+                  <input
+                    type="text"
+                    className="checkout-input-field"
+                    value={form.last_name}
+                    onChange={(e) => setForm({ ...form, last_name: e.target.value })}
+                    placeholder="e.g. Sharma"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Email & Phone Row */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.85rem" }} className="checkout-mobile-stack">
+                <div>
+                  <label style={labelStyle}>Email (for order invoice & tracking) *</label>
+                  <input
+                    type="email"
+                    className="checkout-input-field"
+                    value={form.email}
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    placeholder="rahul@gmail.com"
+                    required
+                  />
+                </div>
+                <div>
+                  <label style={labelStyle}>Phone (10-Digit Mobile Number) *</label>
+                  <div style={{ display: "flex" }}>
+                    <span style={{ padding: "0.7rem 0.65rem", background: "#f8fafc", border: "1px solid #cbd5e1", borderRight: "none", borderRadius: "6px 0 0 6px", fontSize: "0.88rem", fontWeight: 600, color: "#64748b" }}>
+                      +91
+                    </span>
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      className="checkout-input-field"
+                      style={{ borderRadius: "0 6px 6px 0" }}
+                      value={form.phone}
+                      onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, "").slice(0, 10) })}
+                      placeholder="9876543210"
+                      maxLength={10}
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* WhatsApp Alert Checkbox */}
+              <label style={{ display: "flex", alignItems: "center", gap: "0.6rem", cursor: "pointer", background: "#f0fdf4", padding: "0.65rem 0.85rem", border: "1px solid #bbf7d0", borderRadius: "6px" }}>
+                <input
+                  type="checkbox"
+                  checked={form.whatsapp_same}
+                  onChange={(e) => setForm({ ...form, whatsapp_same: e.target.checked })}
+                  style={{ width: "16px", height: "16px", accentColor: "#166534" }}
+                />
+                <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.78rem", color: "#166534", fontWeight: 500 }}>
+                  Send dispatch alerts & live WhatsApp tracking to this number
+                </span>
+              </label>
+
+              {/* PIN Code & Auto-Location Box */}
+              <div style={{ background: "#f8fafc", padding: "1.1rem", border: "1px solid #e2e8f0", borderRadius: "6px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "140px 1fr 1fr", gap: "0.85rem" }} className="checkout-pincode-grid">
+                  <div>
+                    <label style={labelStyle}>PIN Code *</label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      className="checkout-input-field"
+                      value={form.pincode}
+                      onChange={(e) => handlePincodeChange(e.target.value)}
+                      placeholder="110001"
+                      maxLength={6}
+                      required
+                      style={{ fontWeight: 700, letterSpacing: "0.08em" }}
+                    />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>City / District *</label>
+                    <input
+                      type="text"
+                      className="checkout-input-field"
+                      value={form.city}
+                      onChange={(e) => setForm({ ...form, city: e.target.value })}
+                      placeholder="City"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>State *</label>
+                    <input
+                      type="text"
+                      className="checkout-input-field"
+                      value={form.state}
+                      onChange={(e) => setForm({ ...form, state: e.target.value })}
+                      placeholder="State"
+                      required
+                    />
+                  </div>
                 </div>
 
-                {/* Final Button */}
-                <button
-                  type="button"
-                  disabled={placing}
-                  onClick={handlePlaceOrder}
-                  className="btn-primary"
-                  style={{
-                    width: "100%",
-                    justifyContent: "center",
-                    padding: "1rem",
-                    fontSize: "0.92rem",
-                    background: "#111",
-                    color: "#fff",
-                    letterSpacing: "0.06em",
-                  }}
-                >
-                  {placing ? (
-                    <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                      <Loader2 size={18} className="animate-spin" /> Placing Order...
-                    </span>
-                  ) : paymentMethod === "cod" ? (
-                    `Place Order (Pay ${formatPrice(total)} on Delivery)`
-                  ) : (
-                    `Pay ${formatPrice(total)} Securely via UPI / Cards`
-                  )}
-                </button>
+                {pincodeStatus && (
+                  <p
+                    style={{
+                      fontFamily: "var(--font-sans)",
+                      fontSize: "0.76rem",
+                      fontWeight: 600,
+                      marginTop: "0.55rem",
+                      color: pincodeStatus.startsWith("✓") ? "#15803d" : pincodeStatus.startsWith("⚠️") ? "#dc2626" : "#64748b",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.35rem",
+                    }}
+                  >
+                    {pincodeLoading && <Loader2 size={13} className="animate-spin" />}
+                    {pincodeStatus}
+                  </p>
+                )}
               </div>
-            )}
+
+              {/* Street Address */}
+              <div>
+                <label style={labelStyle}>House / Flat No., Building, Street Address *</label>
+                <input
+                  type="text"
+                  className="checkout-input-field"
+                  value={form.address1}
+                  onChange={(e) => setForm({ ...form, address1: e.target.value })}
+                  placeholder="e.g. Flat 302, Green Avenue, MG Road"
+                  required
+                />
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.85rem" }} className="checkout-mobile-stack">
+                <div>
+                  <label style={labelStyle}>Area / Colony (Optional)</label>
+                  <input
+                    type="text"
+                    className="checkout-input-field"
+                    value={form.address2}
+                    onChange={(e) => setForm({ ...form, address2: e.target.value })}
+                    placeholder="e.g. Sector 14"
+                  />
+                </div>
+                <div>
+                  <label style={labelStyle}>Landmark (Optional)</label>
+                  <input
+                    type="text"
+                    className="checkout-input-field"
+                    value={form.landmark}
+                    onChange={(e) => setForm({ ...form, landmark: e.target.value })}
+                    placeholder="e.g. Near HDFC Bank"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
+
+          {/* Card 2: Payment Method */}
+          <div style={{ background: "#fff", border: "1px solid #e2e8f0", padding: "clamp(1.25rem, 3vw, 2rem)", borderRadius: "8px", boxShadow: "0 1px 3px rgba(0,0,0,0.02)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1.25rem", paddingBottom: "0.75rem", borderBottom: "1px solid #f1f5f9" }}>
+              <span style={{ width: "24px", height: "24px", borderRadius: "50%", background: "#111", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.75rem", fontWeight: 700 }}>
+                2
+              </span>
+              <h2 style={{ fontFamily: "var(--font-sans)", fontSize: "1rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "#0f172a" }}>
+                Payment Method
+              </h2>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.9rem" }}>
+              {/* Option A: Online Payment */}
+              <label
+                onClick={() => setPaymentMethod("razorpay")}
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: "0.85rem",
+                  padding: "1.1rem",
+                  border: paymentMethod === "razorpay" ? "2px solid #111" : "1px solid #cbd5e1",
+                  background: paymentMethod === "razorpay" ? "#fafafa" : "#fff",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                <input
+                  type="radio"
+                  name="payment_method_choice"
+                  checked={paymentMethod === "razorpay"}
+                  onChange={() => setPaymentMethod("razorpay")}
+                  style={{ marginTop: "0.2rem", width: "16px", height: "16px", accentColor: "#111" }}
+                />
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
+                    <span style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: "0.95rem", color: "#0f172a" }}>
+                      ⚡ Online Payment (UPI, GPay, PhonePe, Cards, NetBanking)
+                    </span>
+                    <span style={{ padding: "0.15rem 0.45rem", background: "#dcfce7", color: "#15803d", fontSize: "0.65rem", fontWeight: 700, borderRadius: "3px" }}>
+                      Instant Confirmation
+                    </span>
+                  </div>
+                  <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.78rem", color: "#64748b", marginTop: "0.3rem", lineHeight: 1.45 }}>
+                    Pay securely using Google Pay, PhonePe, Paytm, BHIM UPI, Debit/Credit Cards, or NetBanking.
+                  </p>
+                </div>
+              </label>
+
+              {/* Option B: COD */}
+              <label
+                onClick={() => setPaymentMethod("cod")}
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: "0.85rem",
+                  padding: "1.1rem",
+                  border: paymentMethod === "cod" ? "2px solid #111" : "1px solid #cbd5e1",
+                  background: paymentMethod === "cod" ? "#fafafa" : "#fff",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                <input
+                  type="radio"
+                  name="payment_method_choice"
+                  checked={paymentMethod === "cod"}
+                  onChange={() => setPaymentMethod("cod")}
+                  style={{ marginTop: "0.2rem", width: "16px", height: "16px", accentColor: "#111" }}
+                />
+                <div style={{ flex: 1 }}>
+                  <span style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: "0.95rem", color: "#0f172a" }}>
+                    💵 Cash on Delivery (COD)
+                  </span>
+                  <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.78rem", color: "#64748b", marginTop: "0.3rem", lineHeight: 1.45 }}>
+                    Pay cash or UPI directly to the courier delivery agent when your order arrives.
+                  </p>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          {/* Card 3: Single High-Converting Place Order Button */}
+          <div style={{ background: "#fff", border: "1px solid #e2e8f0", padding: "clamp(1.25rem, 3vw, 2rem)", borderRadius: "8px" }}>
+            <button
+              type="button"
+              disabled={placing}
+              onClick={handlePlaceOrder}
+              style={{
+                width: "100%",
+                padding: "1.1rem",
+                background: "#111111",
+                color: "#ffffff",
+                border: "none",
+                borderRadius: "6px",
+                fontFamily: "var(--font-sans)",
+                fontSize: "1rem",
+                fontWeight: 700,
+                letterSpacing: "0.05em",
+                cursor: placing ? "not-allowed" : "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "0.6rem",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                transition: "opacity 0.2s",
+                opacity: placing ? 0.75 : 1,
+              }}
+            >
+              {placing ? (
+                <>
+                  <Loader2 size={20} className="animate-spin" />
+                  <span>Processing Your Order...</span>
+                </>
+              ) : paymentMethod === "cod" ? (
+                <>
+                  <span>Place Order (Pay {formatPrice(total)} on Delivery)</span>
+                  <ArrowRight size={18} />
+                </>
+              ) : (
+                <>
+                  <span>Pay {formatPrice(total)} Securely via UPI / Cards</span>
+                  <ArrowRight size={18} />
+                </>
+              )}
+            </button>
+
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem", marginTop: "1rem", color: "#64748b" }}>
+              <Lock size={13} />
+              <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.75rem", fontWeight: 500 }}>
+                Guaranteed Safe &amp; Secure 256-Bit Encrypted Transaction
+              </span>
+            </div>
+          </div>
+
         </div>
 
-        {/* ── Right Column: Desktop Order Summary & Coupon ── */}
+        {/* ── Right Column: Desktop Sidebar Summary ── */}
         <div className="checkout-desktop-summary" style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-          <div style={{ background: "#fff", border: "1px solid #e5e5e5", padding: "1.5rem" }}>
-            <h3 style={{ fontFamily: "var(--font-sans)", fontSize: "0.8rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "1rem" }}>
+          <div style={{ background: "#fff", border: "1px solid #e2e8f0", padding: "1.5rem", borderRadius: "8px" }}>
+            <h3 style={{ fontFamily: "var(--font-sans)", fontSize: "0.82rem", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#0f172a", marginBottom: "1.1rem" }}>
               Order Summary ({items.reduce((s, i) => s + i.quantity, 0)} Items)
             </h3>
 
-            {/* Desktop Products */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginBottom: "1.25rem" }}>
+            {/* Products List */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem", marginBottom: "1.25rem" }}>
               {items.map((item) => (
                 <div key={item.product_id} style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                  <div style={{ width: "40px", height: "48px", background: "#f5f5f5", border: "1px solid #eee", flexShrink: 0, overflow: "hidden" }}>
+                  <div style={{ width: "42px", height: "52px", background: "#f8fafc", border: "1px solid #e2e8f0", flexShrink: 0, overflow: "hidden", borderRadius: "4px" }}>
                     {item.image_url ? (
                       <img src={item.image_url} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     ) : (
-                      <div style={{ display: "flex", height: "100%", alignItems: "center", justifyContent: "center", fontSize: "0.6rem" }}>ANG</div>
+                      <div style={{ display: "flex", height: "100%", alignItems: "center", justifyContent: "center", fontSize: "0.6rem", color: "#94a3b8" }}>ANG</div>
                     )}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.8rem", fontWeight: 600, color: "#111", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.82rem", fontWeight: 600, color: "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                       {item.name}
                     </p>
-                    <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.7rem", color: "#888" }}>
+                    <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.72rem", color: "#64748b" }}>
                       Qty: {item.quantity} · {formatPrice(item.price)}
                     </p>
                   </div>
-                  <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.82rem", fontWeight: 700 }}>
+                  <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.85rem", fontWeight: 700 }}>
                     {formatPrice(item.price * item.quantity)}
                   </span>
                 </div>
@@ -1096,21 +903,24 @@ export default function CheckoutPage() {
             </div>
 
             {/* Coupon Box */}
-            <div style={{ marginBottom: "0.85rem", borderTop: "1px solid #f0f0f0", paddingTop: "0.85rem" }}>
+            <div style={{ borderTop: "1px solid #f1f5f9", paddingTop: "1rem", marginBottom: "1rem" }}>
+              <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#64748b", marginBottom: "0.45rem" }}>
+                Promo / Coupon Code
+              </p>
               <div style={{ display: "flex", gap: "0.4rem" }}>
                 <input
                   type="text"
-                  placeholder="COUPON CODE"
+                  placeholder="ENTER CODE"
                   value={coupon}
                   onChange={(e) => setCoupon(e.target.value.toUpperCase())}
                   style={{
                     flex: 1,
                     padding: "0.55rem 0.65rem",
-                    border: "1px solid #ddd",
+                    border: "1px solid #cbd5e1",
+                    borderRadius: "4px",
                     fontFamily: "monospace",
-                    fontSize: "0.78rem",
+                    fontSize: "0.8rem",
                     textTransform: "uppercase",
-                    outline: "none",
                   }}
                 />
                 <button
@@ -1118,12 +928,13 @@ export default function CheckoutPage() {
                   onClick={applyCoupon}
                   disabled={couponLoading}
                   style={{
-                    padding: "0.55rem 0.85rem",
+                    padding: "0.55rem 0.9rem",
                     background: "#111",
                     color: "#fff",
                     border: "none",
+                    borderRadius: "4px",
                     fontFamily: "var(--font-sans)",
-                    fontSize: "0.72rem",
+                    fontSize: "0.75rem",
                     fontWeight: 600,
                     cursor: "pointer",
                   }}
@@ -1132,34 +943,34 @@ export default function CheckoutPage() {
                 </button>
               </div>
               {couponApplied && (
-                <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.72rem", color: "#166534", marginTop: "0.35rem", fontWeight: 600 }}>
-                  ✓ Code {couponApplied} applied
+                <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.72rem", color: "#15803d", marginTop: "0.35rem", fontWeight: 600 }}>
+                  ✓ Code {couponApplied} applied (-{formatPrice(discount)})
                 </p>
               )}
             </div>
 
-            {/* Tester 100% Value Settle Card */}
-            <div style={{ background: "#fbf8f2", border: "1px solid #ebdcc5", padding: "0.85rem", borderRadius: "2px", marginBottom: "1rem" }}>
+            {/* Tester 100% Value Settlement Card */}
+            <div style={{ background: "#fbf8f2", border: "1px solid #ebdcc5", padding: "0.85rem", borderRadius: "6px", marginBottom: "1.25rem" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.35rem" }}>
                 <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.72rem", fontWeight: 700, color: "#8a6d3b", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                   🧪 100% Tester Value Settle
                 </span>
                 {testerDiscount > 0 && (
-                  <button type="button" onClick={removeTesterCredit} style={{ background: "none", border: "none", color: "#c0392b", fontSize: "0.68rem", cursor: "pointer" }}>
+                  <button type="button" onClick={removeTesterCredit} style={{ background: "none", border: "none", color: "#dc2626", fontSize: "0.68rem", fontWeight: 600, cursor: "pointer" }}>
                     Remove
                   </button>
                 )}
               </div>
               {testerDiscount > 0 ? (
-                <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.75rem", color: "#27ae60", fontWeight: 600 }}>
+                <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.75rem", color: "#15803d", fontWeight: 600 }}>
                   ✓ {testerMessage || `Tester value of ${formatPrice(testerDiscount)} deducted!`}
                 </p>
               ) : (
                 <>
-                  <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.7rem", color: "#8a6d3b", marginBottom: "0.4rem", lineHeight: 1.4 }}>
+                  <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.72rem", color: "#8a6d3b", marginBottom: "0.45rem", lineHeight: 1.4 }}>
                     Bought a tester earlier? Enter your tester order # or email to deduct 100% of the cost.
                   </p>
-                  <div style={{ display: "flex", gap: "0.35rem" }}>
+                  <div style={{ display: "flex", gap: "0.4rem" }}>
                     <input
                       type="text"
                       placeholder="ANG-2026-XXXXXX / Email"
@@ -1167,11 +978,11 @@ export default function CheckoutPage() {
                       onChange={(e) => setTesterCreditQuery(e.target.value)}
                       style={{
                         flex: 1,
-                        padding: "0.45rem 0.6rem",
+                        padding: "0.5rem 0.65rem",
                         border: "1px solid #ebdcc5",
-                        fontSize: "0.75rem",
+                        borderRadius: "4px",
+                        fontSize: "0.76rem",
                         background: "#fff",
-                        outline: "none",
                       }}
                     />
                     <button
@@ -1179,10 +990,11 @@ export default function CheckoutPage() {
                       onClick={() => applyTesterCredit()}
                       disabled={testerLoading}
                       style={{
-                        padding: "0.45rem 0.75rem",
+                        padding: "0.5rem 0.85rem",
                         background: "#8a6d3b",
                         color: "#fff",
                         border: "none",
+                        borderRadius: "4px",
                         fontSize: "0.72rem",
                         fontWeight: 600,
                         cursor: "pointer",
@@ -1195,148 +1007,74 @@ export default function CheckoutPage() {
               )}
             </div>
 
-            {/* Price lines */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", borderTop: "1px solid #f0f0f0", paddingTop: "0.85rem" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.82rem", color: "#666" }}>
+            {/* Price breakdown */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.55rem", borderTop: "1px solid #f1f5f9", paddingTop: "0.9rem", fontSize: "0.85rem" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", color: "#64748b" }}>
                 <span>Subtotal</span>
                 <span>{formatPrice(subtotal)}</span>
               </div>
               {discount > 0 && (
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.82rem", color: "#166534", fontWeight: 600 }}>
-                  <span>Discount</span>
+                <div style={{ display: "flex", justifyContent: "space-between", color: "#15803d", fontWeight: 600 }}>
+                  <span>Discount ({couponApplied})</span>
                   <span>-{formatPrice(discount)}</span>
                 </div>
               )}
               {testerDiscount > 0 && (
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.82rem", color: "#8a6d3b", fontWeight: 700 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", color: "#8a6d3b", fontWeight: 700 }}>
                   <span>Tester Settle ({testerAppliedOrder})</span>
                   <span>-{formatPrice(testerDiscount)}</span>
                 </div>
               )}
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.82rem", color: "#666" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", color: "#64748b" }}>
                 <span>Shipping</span>
-                <span>{shipping === 0 ? <strong style={{ color: "#166534" }}>FREE</strong> : formatPrice(shipping)}</span>
+                <span>{shippingCost === 0 ? <strong style={{ color: "#15803d" }}>FREE</strong> : formatPrice(shippingCost)}</span>
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "1.05rem", fontWeight: 700, color: "#111", borderTop: "1px solid #eee", paddingTop: "0.85rem", marginTop: "0.2rem" }}>
-                <span>Total</span>
+              <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, fontSize: "1.1rem", color: "#0f172a", borderTop: "1px solid #e2e8f0", paddingTop: "0.65rem", marginTop: "0.3rem" }}>
+                <span>Total to Pay</span>
                 <span>{formatPrice(total)}</span>
               </div>
             </div>
           </div>
-
-          {/* Guarantees */}
-          <div style={{ background: "#fafafa", border: "1px solid #eee", padding: "1rem", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <Truck size={15} color="#555" />
-              <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.72rem", color: "#555" }}>
-                Dispatched via Bluedart / Delhivery in 24–48 hrs
-              </p>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <ShieldCheck size={15} color="#555" />
-              <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.72rem", color: "#555" }}>
-                100% Authentic Handcrafted Luxury Fragrances
-              </p>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <RotateCcw size={15} color="#555" />
-              <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.72rem", color: "#555" }}>
-                7-Day Hassle-Free Replacement for sealed bottles
-              </p>
-            </div>
-          </div>
         </div>
+
       </div>
 
-      {/* ── Mobile Sticky Bottom Action Bar ── */}
-      <div className="checkout-mobile-sticky-bar">
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", maxWidth: "500px", margin: "0 auto", width: "100%" }}>
-          <div>
-            <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.68rem", color: "#888", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-              Total Amount
-            </p>
-            <p style={{ fontFamily: "var(--font-sans)", fontSize: "1.1rem", fontWeight: 700, color: "#111" }}>
-              {formatPrice(total)}
-            </p>
-          </div>
-
-          {step === 1 ? (
-            <button
-              type="button"
-              onClick={() => goToStep2()}
-              className="btn-primary"
-              style={{ flex: 1, justifyContent: "center", padding: "0.85rem 1rem", fontSize: "0.82rem" }}
-            >
-              <span>Continue →</span>
-            </button>
-          ) : step === 2 ? (
-            <button
-              type="button"
-              onClick={goToStep3}
-              className="btn-primary"
-              style={{ flex: 1, justifyContent: "center", padding: "0.85rem 1rem", fontSize: "0.82rem" }}
-            >
-              <span>Review Order →</span>
-            </button>
-          ) : (
-            <button
-              type="button"
-              disabled={placing}
-              onClick={handlePlaceOrder}
-              className="btn-primary"
-              style={{ flex: 1, justifyContent: "center", padding: "0.85rem 1rem", fontSize: "0.82rem" }}
-            >
-              {placing ? (
-                <span style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                  <Loader2 size={16} className="animate-spin" /> Processing...
-                </span>
-              ) : paymentMethod === "cod" ? (
-                "Place Order (COD)"
-              ) : (
-                "Pay via UPI/Card"
-              )}
-            </button>
-          )}
-        </div>
-      </div>
-
-      <style>{`
-        @media (max-width: 768px) {
+      {/* ── Scoped Form Inputs CSS ── */}
+      <style jsx global>{`
+        .checkout-input-field {
+          width: 100%;
+          padding: 0.75rem 0.85rem;
+          border: 1px solid #cbd5e1;
+          border-radius: 6px;
+          font-family: var(--font-sans);
+          font-size: 16px !important; /* Prevents mobile Safari auto-zoom on input focus */
+          color: #0f172a;
+          background: #ffffff;
+          outline: none;
+          transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .checkout-input-field:focus {
+          border-color: #111111;
+          box-shadow: 0 0 0 2px rgba(17, 17, 17, 0.1);
+        }
+        @media (max-width: 900px) {
           .checkout-main-grid {
             grid-template-columns: 1fr !important;
           }
           .checkout-desktop-summary {
             display: none !important;
           }
-          .checkout-mobile-summary-card {
-            display: block !important;
-          }
-          .checkout-mobile-sticky-bar {
-            display: block !important;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(255, 255, 255, 0.98);
-            border-top: 1px solid #e5e5e5;
-            padding: 0.75rem 1rem;
-            padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
-            z-index: 90;
-            box-shadow: 0 -4px 16px rgba(0,0,0,0.06);
-            backdrop-filter: blur(8px);
+        }
+        @media (max-width: 640px) {
+          .checkout-mobile-stack {
+            grid-template-columns: 1fr !important;
           }
           .checkout-pincode-grid {
             grid-template-columns: 1fr !important;
           }
-          .checkout-two-input-grid {
-            grid-template-columns: 1fr !important;
-          }
         }
-        @media (min-width: 769px) {
+        @media (min-width: 901px) {
           .checkout-mobile-summary-card {
-            display: none !important;
-          }
-          .checkout-mobile-sticky-bar {
             display: none !important;
           }
         }
@@ -1344,14 +1082,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-
-const labelStyle: React.CSSProperties = {
-  display: "block",
-  fontFamily: "var(--font-sans)",
-  fontSize: "0.7rem",
-  fontWeight: 600,
-  letterSpacing: "0.06em",
-  textTransform: "uppercase",
-  color: "#777",
-  marginBottom: "0.3rem",
-};
