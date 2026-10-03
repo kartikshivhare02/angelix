@@ -61,6 +61,7 @@ export default function AdminOrderDetailPage() {
   const [newStatus, setNewStatus] = useState("");
   const [newPaymentStatus, setNewPaymentStatus] = useState("");
   const [shipping, setShipping] = useState({ courier_name: "", tracking_number: "", tracking_url: "", estimated_delivery: "" });
+  const [syncingRzp, setSyncingRzp] = useState(false);
 
   useEffect(() => {
     fetch(`/api/admin/orders/${id}`)
@@ -99,6 +100,28 @@ export default function AdminOrderDetailPage() {
       toast.success("Order updated successfully.");
     } catch { toast.error("Failed to update order."); }
     finally { setSaving(false); }
+  };
+
+  const handleSyncRazorpay = async () => {
+    setSyncingRzp(true);
+    try {
+      const res = await fetch(`/api/admin/orders/${id}`, { cache: "no-store" });
+      const d = await res.json();
+      if (d.order) {
+        setOrder(d.order);
+        setNewStatus(d.order.status);
+        setNewPaymentStatus(d.order.payment_status || "pending");
+        if (d.order.payment_status === "paid") {
+          toast.success("🎉 Razorpay Live Sync: Payment identified & confirmed as PAID!");
+        } else {
+          toast.info(`Razorpay Status: ${d.order.payment_status.toUpperCase()}`);
+        }
+      }
+    } catch {
+      toast.error("Failed to sync live status with Razorpay.");
+    } finally {
+      setSyncingRzp(false);
+    }
   };
 
   if (loading) {
@@ -310,6 +333,31 @@ export default function AdminOrderDetailPage() {
               {order.razorpay_order_id && <FIELD label="Razorpay Order ID"><span style={{ fontSize: "0.75rem", wordBreak: "break-all" }}>{order.razorpay_order_id}</span></FIELD>}
               {order.razorpay_payment_id && <FIELD label="Payment ID"><span style={{ fontSize: "0.75rem", wordBreak: "break-all" }}>{order.razorpay_payment_id}</span></FIELD>}
               {order.coupon_code && <FIELD label="Coupon">{order.coupon_code}</FIELD>}
+
+              {order.razorpay_order_id && (
+                <button
+                  type="button"
+                  onClick={handleSyncRazorpay}
+                  disabled={syncingRzp}
+                  style={{
+                    marginTop: "0.5rem",
+                    padding: "0.55rem 0.9rem",
+                    background: "#111",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "4px",
+                    fontSize: "0.76rem",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.4rem",
+                    opacity: syncingRzp ? 0.7 : 1,
+                  }}
+                >
+                  {syncingRzp ? "Checking Razorpay API..." : "🔄 Verify Live with Razorpay"}
+                </button>
+              )}
             </div>
           </section>
 
