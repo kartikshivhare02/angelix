@@ -1,6 +1,4 @@
-"use client";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -23,6 +21,26 @@ export function ProductDetailClient({ product }: Props) {
   const [openSection, setOpenSection] = useState<string | null>("notes");
   const defaultVolume = Number(product.volume_ml) || 100;
   const [selectedSize, setSelectedSize] = useState<number>(defaultVolume);
+
+  const [settings, setSettings] = useState<{ free_shipping_min: number; shipping_charge: number }>({
+    free_shipping_min: 1499,
+    shipping_charge: 99,
+  });
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((res) => res.json())
+      .then((data) => {
+        const s = data?.settings || data;
+        if (s) {
+          setSettings({
+            free_shipping_min: s.free_shipping_min ?? 1499,
+            shipping_charge: s.shipping_charge ?? 99,
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const { price: fullBottlePrice, discountPercent } = computeDiscountedPrice(
     Number(product.original_price) || 0,
@@ -162,7 +180,7 @@ export function ProductDetailClient({ product }: Props) {
             📦 Estimated delivery: <strong>{product.delivery_estimate ?? "3–5 business days"}</strong>
           </p>
           <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.9rem", color: "var(--color-text-muted)", lineHeight: 1.7 }}>
-            🚚 Free shipping on orders above ₹1,499
+            🚚 {settings.free_shipping_min > 0 ? `Free shipping on orders above ${formatPrice(settings.free_shipping_min)}` : "Free shipping on all orders"}
           </p>
           <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.9rem", color: "var(--color-text-muted)", lineHeight: 1.7 }}>
             🔒 All sales final. Returns/replacements held strictly at owner discretion for damaged or defective items.
@@ -606,7 +624,7 @@ export function ProductDetailClient({ product }: Props) {
 
           {/* Trust signals */}
           <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", paddingTop: "0.5rem" }}>
-            {["🚚 Free ship ₹1499+", "🔒 Secure payment", "🧪 Try testers"].map((t) => (
+            {[`🚚 Free ship ${formatPrice(settings.free_shipping_min)}+`, "🔒 Secure payment", "🧪 Try testers"].map((t) => (
               <span key={t} style={{ fontFamily: "var(--font-sans)", fontSize: "0.72rem", color: "var(--color-text-muted)" }}>{t}</span>
             ))}
           </div>

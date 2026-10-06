@@ -258,8 +258,20 @@ export async function POST(req: NextRequest) {
 
     const totalDiscount = couponDiscount + testerDiscount;
 
-    // 5. Server-side shipping fee calculation
-    const shipping = subtotal >= 1499 ? 0 : 99;
+    // 5. Server-side shipping fee calculation dynamically fetched from DB settings
+    let freeShippingMin = 1499;
+    let shippingCharge = 99;
+    try {
+      const { data: dbSettings } = await adminClient.from("settings").select("free_shipping_min, shipping_charge").eq("id", 1).single();
+      if (dbSettings) {
+        freeShippingMin = Number(dbSettings.free_shipping_min) ?? 1499;
+        shippingCharge = Number(dbSettings.shipping_charge) ?? 99;
+      }
+    } catch {
+      // Fallback defaults if query fails
+    }
+
+    const shipping = freeShippingMin > 0 && subtotal >= freeShippingMin ? 0 : (freeShippingMin === 0 ? 0 : shippingCharge);
     const total = Math.max(0, subtotal - totalDiscount + shipping);
     const orderNumber = generateOrderNumber();
 

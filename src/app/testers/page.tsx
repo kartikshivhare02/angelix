@@ -3,6 +3,8 @@ import { Product } from "@/lib/types";
 import { TesterGrid } from "@/components/testers/TesterGrid";
 import Link from "next/link";
 import { Sparkles, ShieldCheck, Truck, MessageCircle } from "lucide-react";
+import { getSiteSettings } from "@/lib/getSiteSettings";
+import { formatPrice } from "@/lib/utils";
 
 export const metadata = {
   title: "Fragrance Testers & Discovery — ANGELIX by Suraj",
@@ -44,7 +46,10 @@ async function getTesterData(): Promise<{ products: Product[]; testers: TesterOp
 }
 
 export default async function TestersPage() {
-  const { products, testers } = await getTesterData();
+  const [{ products, testers }, settings] = await Promise.all([
+    getTesterData(),
+    getSiteSettings(),
+  ]);
 
   return (
     <div style={{ background: "var(--color-bg)", minHeight: "100vh" }}>
@@ -210,7 +215,7 @@ export default async function TestersPage() {
           </span>
           <span className="hidden sm:inline" style={{ opacity: 0.5 }}>|</span>
           <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-            <Truck size={16} /> Free Priority Delivery on ₹1499+
+            <Truck size={16} /> Free Priority Delivery on {formatPrice(settings.free_shipping_min)}+
           </span>
         </div>
       </section>

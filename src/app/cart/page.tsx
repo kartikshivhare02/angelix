@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Minus, Plus, X, ShoppingBag, ArrowRight } from "lucide-react";
 import { useCart } from "@/lib/cart-store";
 import { formatPrice, formatProductSize } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
 export default function CartPage() {
@@ -15,8 +15,30 @@ export default function CartPage() {
   const [couponApplied, setCouponApplied] = useState("");
   const [couponLoading, setCouponLoading] = useState(false);
 
+  const [settings, setSettings] = useState<{ free_shipping_min: number; shipping_charge: number }>({
+    free_shipping_min: 1499,
+    shipping_charge: 99,
+  });
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((res) => res.json())
+      .then((data) => {
+        const s = data?.settings || data;
+        if (s) {
+          setSettings({
+            free_shipping_min: s.free_shipping_min ?? 1499,
+            shipping_charge: s.shipping_charge ?? 99,
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const subtotal = totalPrice();
-  const shipping = subtotal >= 1499 ? 0 : 99;
+  const freeMin = settings.free_shipping_min;
+  const shipCharge = settings.shipping_charge;
+  const shipping = freeMin > 0 && subtotal >= freeMin ? 0 : (freeMin === 0 ? 0 : shipCharge);
   const total = subtotal - discount + shipping;
 
   const applyCoupon = async () => {
@@ -200,9 +222,9 @@ export default function CartPage() {
               <span style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: "1.1rem" }}>{formatPrice(total)}</span>
             </div>
 
-            {subtotal < 1499 && (
+            {freeMin > 0 && subtotal < freeMin && (
               <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.75rem", color: "var(--color-text-muted)", marginBottom: "1rem", textAlign: "center" }}>
-                Add {formatPrice(1499 - subtotal)} more for free shipping
+                Add {formatPrice(freeMin - subtotal)} more for free shipping
               </p>
             )}
 

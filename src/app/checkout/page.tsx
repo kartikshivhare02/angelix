@@ -171,8 +171,30 @@ export default function CheckoutPage() {
     }
   };
 
+  const [settings, setSettings] = useState<{ free_shipping_min: number; shipping_charge: number }>({
+    free_shipping_min: 1499,
+    shipping_charge: 99,
+  });
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((res) => res.json())
+      .then((data) => {
+        const s = data?.settings || data;
+        if (s) {
+          setSettings({
+            free_shipping_min: s.free_shipping_min ?? 1499,
+            shipping_charge: s.shipping_charge ?? 99,
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const subtotal = totalPrice();
-  const shippingCost = subtotal >= 1499 ? 0 : 99;
+  const freeMin = settings.free_shipping_min;
+  const shipCharge = settings.shipping_charge;
+  const shippingCost = freeMin > 0 && subtotal >= freeMin ? 0 : (freeMin === 0 ? 0 : shipCharge);
   const total = Math.max(0, subtotal - discount - testerDiscount + shippingCost);
 
   const applyCoupon = async () => {

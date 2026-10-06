@@ -1,12 +1,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getSiteSettings } from "@/lib/getSiteSettings";
+
+export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: "Return & Exchange Policy — ANGELIX by Suraj",
   description: "Read the ANGELIX Return and Exchange Policy — our terms for returns, refunds, and exchanges.",
 };
 
-export default function ReturnPolicyPage() {
+export default async function ReturnPolicyPage() {
+  const settings = await getSiteSettings();
+  const email = settings.support_email || "Surajxsingh41@gmail.com";
+  const whatsapp = settings.whatsapp_number || "+917067697646";
+  const whatsappClean = whatsapp.replace(/\D/g, "");
+
   return (
     <div className="container-site section-py" style={{ maxWidth: "820px" }}>
       <div style={{ marginBottom: "3rem" }}>
@@ -15,14 +23,14 @@ export default function ReturnPolicyPage() {
           Return &amp; Exchange Policy
         </h1>
         <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.82rem", color: "var(--color-text-muted)" }}>
-          Last updated: August 2026
+          Strictly Admin &amp; Management Controlled
         </p>
       </div>
 
       {/* Notice box */}
       <div style={{ background: "var(--color-cream)", border: "1px solid var(--color-border)", padding: "1.5rem 2rem", marginBottom: "2.5rem" }}>
         <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.88rem", color: "var(--color-text)", lineHeight: 1.8 }}>
-          <strong>Notice:</strong> Due to the personal and artisanal nature of fine fragrance products and strict hygiene standards, <strong>all sales are final</strong>. We do not accept general returns, refunds, or exchanges. Any return, replacement, or refund requests are strictly subject to review and approval at the sole discretion of the owner / brand management.
+          <strong>Notice:</strong> Due to the personal and artisanal nature of fine fragrance products and strict hygiene standards, <strong>all sales are final</strong>. We do not accept general returns, refunds, or exchanges. Any return, replacement, or refund requests are strictly subject to review and approval at the sole discretion of the brand management/admin.
         </p>
       </div>
 
@@ -37,31 +45,26 @@ export default function ReturnPolicyPage() {
           <li>Discovery testers (2ml, 5ml, 10ml) and promotional items are strictly non-returnable.</li>
         </ul>
 
-        <h2>2. Owner Discretion &amp; Damaged Items</h2>
+        <h2>2. Owner &amp; Admin Discretion</h2>
         <p>
-          Returns, replacements, or refunds are <strong>strictly held at the discretion of the owner</strong> and brand management. Consideration is granted solely for:
+          Returns, replacements, or refunds are <strong>strictly held at the discretion of the admin</strong> and brand management. Consideration is granted solely for:
         </p>
         <ul>
           <li>Severe transit damage (broken bottle or damaged atomizer)</li>
           <li>Wrong product delivered due to fulfillment error</li>
         </ul>
 
-        <h2>3. Request Process (Transit Damage or Incorrect Item)</h2>
-        <p>If you believe your order qualifies for an owner-discretion evaluation:</p>
+        <h2>3. Request Process</h2>
+        <p>If you believe your order qualifies for an owner/admin evaluation:</p>
         <ul>
-          <li>Contact us at <a href="mailto:Surajxsingh41@gmail.com">Surajxsingh41@gmail.com</a> or via WhatsApp at <a href="https://wa.me/917067697646">+91 70676 97646</a> immediately upon delivery.</li>
-          <li>Provide your order number, clear unboxing photographs, and uncut video footage demonstrating the issue.</li>
-          <li>Our management team will evaluate your case individually and decide whether a replacement or credit is granted.</li>
+          <li>Contact us at <a href={`mailto:${email}`}>{email}</a> or via WhatsApp at <a href={`https://wa.me/${whatsappClean}`}>{whatsapp}</a> immediately upon delivery.</li>
+          <li>Provide your order number, clear unboxing photographs, and video footage demonstrating the issue.</li>
+          <li>Our management team will evaluate your request and issue approval if eligible.</li>
         </ul>
 
-        <h2>4. Cancellations</h2>
+        <h2>4. Contact</h2>
         <p>
-          Orders can be cancelled before they enter processing and dispatch. Once an order is dispatched from our fulfillment facility, it cannot be cancelled or returned.
-        </p>
-
-        <h2>5. Contact</h2>
-        <p>
-          For any questions regarding your order or our policies, please contact us at <a href="mailto:Surajxsingh41@gmail.com">Surajxsingh41@gmail.com</a> or reach out to us via <Link href="/contact">our contact page</Link>.
+          For any questions regarding your order or our policies, please contact us at <a href={`mailto:${email}`}>{email}</a> or reach out via <Link href="/contact">our contact page</Link>.
         </p>
       </div>
 

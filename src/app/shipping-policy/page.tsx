@@ -1,11 +1,22 @@
 import type { Metadata } from "next";
+import { getSiteSettings } from "@/lib/getSiteSettings";
+import { formatPrice } from "@/lib/utils";
+
+export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: "Shipping Policy — ANGELIX by Suraj",
   description: "Read the ANGELIX Shipping Policy — delivery timelines, costs, and tracking for your orders.",
 };
 
-export default function ShippingPolicyPage() {
+export default async function ShippingPolicyPage() {
+  const settings = await getSiteSettings();
+  const freeMinText = settings.free_shipping_min > 0 ? `Orders above ${formatPrice(settings.free_shipping_min)}` : "All Orders";
+  const shippingChargeText = settings.shipping_charge > 0 ? formatPrice(settings.shipping_charge) : "Free";
+  const email = settings.support_email || "Surajxsingh41@gmail.com";
+  const whatsapp = settings.whatsapp_number || "+917067697646";
+  const whatsappClean = whatsapp.replace(/\D/g, "");
+
   return (
     <div className="container-site section-py" style={{ maxWidth: "820px" }}>
       <div style={{ marginBottom: "3rem" }}>
@@ -14,16 +25,16 @@ export default function ShippingPolicyPage() {
           Shipping Policy
         </h1>
         <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.82rem", color: "var(--color-text-muted)" }}>
-          Last updated: August 2026
+          Updated with current database settings
         </p>
       </div>
 
-      {/* Key highlights */}
+      {/* Key highlights dynamically rendered from settings */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1px", background: "var(--color-border)", marginBottom: "3rem" }}>
         {[
-          { label: "Free Shipping", value: "Orders above ₹1,499" },
-          { label: "Standard Delivery", value: "3–7 Business Days" },
-          { label: "Tracking", value: "Via WhatsApp & SMS" },
+          { label: "Free Shipping", value: freeMinText },
+          { label: "Standard Shipping", value: shippingChargeText },
+          { label: "Tracking", value: "Via WhatsApp & Email" },
         ].map(({ label, value }) => (
           <div key={label} style={{ background: "var(--color-bg-soft)", padding: "1.5rem", textAlign: "center" }}>
             <p className="label-caps" style={{ color: "var(--color-text-muted)", marginBottom: "0.5rem" }}>{label}</p>
@@ -35,53 +46,48 @@ export default function ShippingPolicyPage() {
       <div className="legal-body">
         <h2>1. Shipping Coverage</h2>
         <p>
-          We currently ship across India. We do not offer international shipping at this time. All orders are dispatched from our fulfillment centre.
+          We currently ship across India. All orders are dispatched directly from our primary fulfillment facility.
         </p>
 
         <h2>2. Shipping Charges</h2>
         <p>
-          Shipping is <strong>free on all orders above ₹1,499</strong>. For orders below this amount, a flat shipping charge of ₹99 applies.
+          {settings.free_shipping_min > 0 ? (
+            <>
+              Shipping is <strong>free on all orders above {formatPrice(settings.free_shipping_min)}</strong>. For orders below this threshold, a flat shipping fee of <strong>{formatPrice(settings.shipping_charge)}</strong> applies.
+            </>
+          ) : (
+            <>
+              Shipping is <strong>free on all orders</strong>.
+            </>
+          )}
         </p>
 
         <h2>3. Processing Time</h2>
         <p>
-          Orders are typically processed and dispatched within <strong>1–2 business days</strong> of payment confirmation. Orders placed on weekends or public holidays are processed on the next business day.
+          Orders are processed and dispatched within <strong>1–2 business days</strong> after confirmation. Orders placed on weekends or public holidays are fulfilled on the next business day.
         </p>
 
         <h2>4. Delivery Timelines</h2>
-        <p>Once dispatched, estimated delivery times are:</p>
+        <p>Estimated delivery timelines across regions:</p>
         <ul>
           <li><strong>Metro Cities:</strong> 2–4 business days</li>
           <li><strong>Tier 2 Cities:</strong> 3–5 business days</li>
           <li><strong>Remote Locations:</strong> 5–8 business days</li>
         </ul>
-        <p>
-          Delivery timelines are estimates and may vary due to courier delays, weather conditions, or local disruptions. ANGELIX is not responsible for delays caused by third-party couriers.
-        </p>
 
         <h2>5. Order Tracking</h2>
         <p>
-          Once your order is shipped, you will receive tracking information via WhatsApp and/or email. You can use the tracking number on the courier&apos;s website to monitor your shipment.
+          As soon as your shipment leaves our warehouse, tracking credentials are dispatched via WhatsApp and Email.
         </p>
 
-        <h2>6. Packaging</h2>
+        <h2>6. Failed Delivery Attempts</h2>
         <p>
-          All ANGELIX orders are carefully packed to ensure the products arrive in perfect condition. Fragrances are wrapped and cushioned to prevent breakage during transit.
+          If a delivery attempt fails, the courier will make subsequent attempts. Please verify your delivery address and mobile contact number at checkout.
         </p>
 
-        <h2>7. Failed Delivery Attempts</h2>
+        <h2>7. Contact</h2>
         <p>
-          If a delivery attempt fails, the courier will typically attempt delivery again. If multiple attempts fail, the package may be returned to us. You will be responsible for re-shipping charges in such cases. Please ensure your shipping address and contact number are accurate.
-        </p>
-
-        <h2>8. Damaged or Lost Shipments</h2>
-        <p>
-          If your order arrives damaged or is lost in transit, please contact us promptly at <a href="mailto:Surajxsingh41@gmail.com">Surajxsingh41@gmail.com</a> with your order number and photographs of the damaged packaging. We will investigate and resolve promptly.
-        </p>
-
-        <h2>9. Contact</h2>
-        <p>
-          For shipping queries, contact us at <a href="mailto:Surajxsingh41@gmail.com">Surajxsingh41@gmail.com</a> or via WhatsApp at <a href="https://wa.me/917067697646">+91 70676 97646</a>.
+          For shipping inquiries, email us at <a href={`mailto:${email}`}>{email}</a> or WhatsApp us at <a href={`https://wa.me/${whatsappClean}`}>{whatsapp}</a>.
         </p>
       </div>
 
