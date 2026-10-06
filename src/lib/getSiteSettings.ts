@@ -31,7 +31,12 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     }
     const { data } = await supabase.from("settings").select("*").eq("id", 1).single();
     if (data) {
-      return { ...DEFAULT_SETTINGS, ...data };
+      return {
+        ...DEFAULT_SETTINGS,
+        ...data,
+        shipping_charge: data.shipping_charge !== undefined && data.shipping_charge !== null ? Number(data.shipping_charge) : DEFAULT_SETTINGS.shipping_charge,
+        free_shipping_min: data.free_shipping_min !== undefined && data.free_shipping_min !== null ? Number(data.free_shipping_min) : DEFAULT_SETTINGS.free_shipping_min,
+      };
     }
   } catch (err) {
     console.warn("Failed to fetch settings from DB:", err);
