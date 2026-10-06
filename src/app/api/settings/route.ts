@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET() {
   try {
     let supabase;
@@ -9,12 +12,12 @@ export async function GET() {
     } catch {
       supabase = await createClient();
     }
-    const { data } = await supabase.from("settings").select("*").eq("id", 1).single();
-    if (data) {
+    const { data, error } = await supabase.from("settings").select("*").eq("id", 1).single();
+    if (data && !error) {
       return NextResponse.json({ settings: data });
     }
-  } catch {
-    // Fallback if DB fetch fails
+  } catch (err) {
+    console.error("[api/settings] Error fetching settings:", err);
   }
   return NextResponse.json({
     settings: {

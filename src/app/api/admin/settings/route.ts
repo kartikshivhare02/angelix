@@ -19,12 +19,11 @@ export async function PATCH(req: NextRequest) {
   const adminClient = await createAdminClient();
   const body = await req.json();
 
-  let updatePayload: Record<string, any> = { ...body, updated_at: new Date().toISOString() };
+  let updatePayload: Record<string, any> = { id: 1, ...body, updated_at: new Date().toISOString() };
 
   let { data, error } = await adminClient
     .from("settings")
-    .update(updatePayload)
-    .eq("id", 1)
+    .upsert(updatePayload)
     .select()
     .single();
 
@@ -38,8 +37,7 @@ export async function PATCH(req: NextRequest) {
 
       const retryRes = await adminClient
         .from("settings")
-        .update(updatePayload)
-        .eq("id", 1)
+        .upsert(updatePayload)
         .select()
         .single();
 
